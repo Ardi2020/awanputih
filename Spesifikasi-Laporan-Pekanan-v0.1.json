@@ -1,0 +1,1771 @@
+{
+  "metadata": {
+    "product_name": "Awanputih — Laporan Pekanan dan Perhalaqahan Berbasis Role",
+    "version": "0.1",
+    "status": "PROVISIONAL",
+    "language": "id",
+    "categories": [
+      "SaaS Web Application",
+      "Dashboard"
+    ],
+    "readiness_score": 72,
+    "quality_score": 80,
+    "prd_owner": null,
+    "source_materials": [
+      "Instruksi dan jawaban pengguna pada 15 Oktober 2026",
+      "https://awanputih.click/",
+      "https://awanputih.click/laporan-pekanan",
+      "https://awanputih.click/kursuses",
+      "PRD-Laporan-Pekanan-v0.1.md; sumber kebenaran, observasi terbatas pada akun Guru"
+    ]
+  },
+  "product_context": {
+    "executive_summary": "Awanputih digunakan untuk mengelola kelompok kursus atau halaqah, anggota/pemuda, dan laporan kegiatan pekanan. Perbaikan yang diminta berpusat pada pembagian tanggung jawab: manager memantau mahali, asisten manager mengawasi kelompok binaan dan memvalidasi perhalaqahan, guru menangani kelompok sendiri, sedangkan admin mengelola akun, role, dan pengaturan. Setiap pengguna mendapat beranda, navigasi, dan data yang relevan dengan pekerjaannya.\n\nPada peninjauan akun berlabel Guru, dashboard masih menampilkan ringkasan eksekutif mahali, statistik lintas kelompok, dan keuangan. Halaman laporan sudah berorientasi pada laporan milik guru, tetapi halaman kelompok yang ditinjau hanya menyediakan akses detail tanpa tindakan membuat atau mengubah kelompok. Perbaikan memerlukan pembatasan akses data, bukan hanya penyederhanaan tampilan.\n\nMVP mempertahankan seluruh isian laporan yang sudah ada, termasuk informasi pelaksanaan, materi, kehadiran, kontrol, kontak, buletin, dan SPP. Guru dapat mengusulkan perhalaqahan baru atau perubahan data kelompoknya. Asisten manager memeriksa pengajuan, melihat perbandingan perubahan, lalu menyetujui atau mengembalikan dengan alasan. Perubahan baru berlaku sesudah persetujuan; riwayat laporan sebelumnya tetap utuh.\n\nHasil yang dituju adalah alur kerja yang terfokus, batas akses yang dapat diuji, serta perubahan data yang dapat ditelusuri. Stack, struktur organisasi rinci, aturan koreksi laporan terkirim, dan aturan historis perpindahan anggota masih memerlukan keputusan. Karena itu, dokumen ini menjadi dasar pembahasan dan perencanaan implementasi, bukan izin untuk menebak aturan tersebut atau mengganti sistem yang ada.",
+    "problem_statement": "| ID | Temuan yang terlihat | Implikasi |\n|---|---|---|\n| OBS-001 | Akun berlabel Guru melihat “Ringkasan Eksekutif Mahali”, statistik asmen/guru, operasional, keuangan, dan detail kehadiran | Beranda belum sesuai kebutuhan guru; belum membuktikan perilaku semua akun atau celah otorisasi server |\n| OBS-002 | `/laporan-pekanan` berjudul “Laporan Pekanan Saya”; tersedia Draft, Submitted, Edit, detail, dan pengajuan edit laporan | Sebagian pemisahan sudah ada; pertahankan kemampuan yang dibutuhkan |\n| OBS-003 | `/kursuses` menampilkan empat kelompok dengan guru yang sama; tindakan yang terlihat hanya detail | Tambahkan alur pengajuan buat/ubah perhalaqahan; jangan menganggap fitur tersembunyi pasti tidak ada |\n| OBS-004 | Form laporan memiliki langkah Info Umum, Laporan Pemuda, Ringkasan dan Simpan Draft | Pertahankan kemampuan mencicil pengisian; jangan menghilangkan field tanpa inventaris |\n| OBS-005 | Detail laporan terkirim menampilkan kehadiran, kontrol, kontak, buletin cetak/digital, dan SPP per anggota | Ada data pribadi, kegiatan, dan nominal keuangan yang perlu dibatasi |\n| OBS-006 | Sidebar “Pekan 41” dan baris laporan “Pekan 2” memakai rentang 11–17 Oktober 2026 yang sama | Arti nomor pekan perlu disepakati; jangan menyimpulkan salah hitung sebelum mengetahui definisinya |\n\nSumber: `https://awanputih.click/`, `/laporan-pekanan`, `/laporan-pekanan/163/edit`, `/laporan-pekanan/162`, `/kursuses`, `/kursuses/18`, `/pemudas`. Peninjauan hanya membaca melalui UI; tidak menyimpan, mengirim, menyetujui, atau menghapus data. Akun manager, asisten manager, dan admin serta kode/API belum ditinjau. Tidak ada pengujian penetrasi atau verifikasi seluruh formula.",
+    "product_vision": "1. Halaman pertama menjawab tugas utama pengguna pada pekan berjalan.\n2. Akses mengikuti role sekaligus penugasan data; role Guru tidak memberi akses semua guru.\n3. Pengajuan dan data aktif dibedakan secara jelas.\n4. Validasi asisten manager tidak boleh dilewati lewat tautan langsung atau permintaan server.\n5. Perubahan kelompok tidak menulis ulang sejarah laporan.\n6. Istilah, rentang tanggal, status, dan tindakan konsisten di seluruh halaman.",
+    "primary_users": [
+      {
+        "name": "Manager",
+        "jtbd": "Menilai kondisi mahali dan menentukan tindak lanjut",
+        "context": "Rekap mahali",
+        "provenance": "USER_CONFIRMED"
+      },
+      {
+        "name": "Asisten manager (Asmen)",
+        "jtbd": "Memantau guru/kelompok binaan dan memvalidasi pengajuan perhalaqahan",
+        "context": "Kelompok binaannya",
+        "provenance": "USER_CONFIRMED"
+      },
+      {
+        "name": "Guru",
+        "jtbd": "Mengelola perhalaqahan sendiri dan mengisi laporan pekanan",
+        "context": "Kelompok sendiri dan anggota terkait",
+        "provenance": "USER_CONFIRMED"
+      },
+      {
+        "name": "Admin",
+        "jtbd": "Mengatur akun, role, penugasan akses, dan pengaturan aplikasi",
+        "context": "Administrasi sistem; bukan otomatis semua data operasional",
+        "provenance": "USER_CONFIRMED"
+      }
+    ],
+    "constraints": [
+      {
+        "text": "Platform web sudah ada. Repository, framework, database, hosting, skema autentikasi, anggaran, batas waktu, skala pengguna, dan lingkungan staging: UNSPECIFIED. Prioritaskan penyesuaian sistem existing setelah inspeksi, bukan memilih stack baru. Jangan menyimpulkan framework dari pola URL.\n\nMahali dipakai sebagai istilah yang terlihat di aplikasi; belum diketahui apakah ada banyak mahali atau tingkat organisasi tambahan. Batas organisasi wajib dipastikan sebelum migrasi akses. Data anggota dan SPP tidak boleh dianggap publik. Usia anggota belum diketahui; jangan menyimpulkan seluruh pelajar adalah anak.",
+        "provenance": "UNSPECIFIED",
+        "requires_confirmation": true
+      }
+    ]
+  },
+  "scope": {
+    "mvp": [
+      "Empat role dan cakupan sesuai tugas",
+      "Guru mengajukan buat/ubah seluruh data perhalaqahan; Asmen memvalidasi",
+      "Data lama tetap aktif sampai disetujui; riwayat dan alasan pengembalian",
+      "Seluruh field laporan existing dipertahankan",
+      "Mobile friendly wajib untuk seluruh alur inti empat role; kriteria teknis NFR-003 pada PRD bagian 11: \n\n**Hasil USER_CONFIRMED:** aplikasi dapat dipakai dari ponsel untuk seluruh fungsi inti empat role. Kriteria teknis rancangan berikut wajib diverifikasi sebelum rilis; perubahan angka dapat ditinjau tanpa menghapus kebutuhan mobile friendly.\n\n1. Layout dirancang mulai dari layar ponsel. Uji pada lebar viewport 360, 390, dan 430 CSS px, tablet 768 px, serta desktop 1280 px. Tidak ada teks, form, modal, atau tombol terpotong; halaman tidak memerlukan scroll horizontal. Tabel rekap yang benar-benar membutuhkan dua dimensi boleh memakai scroll lokal berlabel, dengan identitas baris dan tindakan tetap dapat diakses.\n2. Navigasi ponsel memakai menu ringkas yang dapat dibuka/ditutup melalui sentuhan dan keyboard, memperlihatkan role aktif, serta hanya memuat fungsi role tersebut. Drawer tidak menutupi halaman setelah ditutup; fokus kembali ke pemicunya.\n3. Form ponsel memakai satu kolom. Input utama menggunakan ukuran teks minimal 16 CSS px; target sentuh tombol, ikon interaktif, dan pilihan minimal 44 × 44 CSS px. Tidak ada tindakan yang hanya tersedia melalui hover.\n4. Daftar halaqah, anggota, laporan, dan pengajuan menampilkan informasi serta tindakan penting dalam susunan yang terbaca di ponsel. Kehadiran/kontrol/kontak/SPP tidak dipaksakan menjadi tabel lebar; gunakan blok per anggota atau susunan responsif setara tanpa menghilangkan field.\n5. Guru dapat menyelesaikan isi laporan, simpan draf, tinjau ringkasan, kirim, buat pengajuan, dan revisi pengajuan di ponsel. Asmen dapat membaca semua perbedaan, menyetujui, serta mengisi alasan pengembalian. Manager dapat memakai filter dan membaca rekap. Admin dapat mengelola akun/role/penugasan tanpa bergantung pada desktop.\n6. Keyboard layar tidak menutupi field aktif, pesan validasi, atau tindakan utama. Tombol melekat jika digunakan tidak menutupi isi terakhir; pertimbangkan area aman perangkat. Modal panjang dapat digulir dan tombol tutup/konfirmasi tetap terjangkau.\n7. Beralih orientasi atau ukuran layar tidak membuang isian yang belum dikirim. Loading, kesalahan, konflik, offline, dan hasil penyimpanan terbaca di layar kecil; tampilkan status tersimpan hanya setelah server mengonfirmasi. Ini tidak menambahkan fitur sinkronisasi offline.\n8. Safari iOS dan Chrome Android menjadi sasaran verifikasi mobile yang direkomendasikan, dengan versi aktual dan perangkat dicatat saat pengujian. Uji minimal satu perangkat fisik Android dan satu iPhone atau lingkungan perangkat setara; emulasi ukuran layar saja tidak cukup untuk membuktikan perilaku keyboard dan sentuhan.\n\nTidak boleh menandai aplikasi mobile friendly hanya karena halaman dapat dibuka atau mengecil. Bukti penerimaan adalah penyelesaian tugas inti di layar ponsel tanpa fungsi hilang, terpotong, atau tak terjangkau."
+    ],
+    "out_of_scope": [
+      "Aplikasi native, AI, integrasi pesan baru, pembayaran SPP daring, formula KPI baru, penggantian stack"
+    ],
+    "deferred_decisions": [
+      "OQ-001: Bagaimana mahali, Asmen, guru, dan kelompok saling ditugaskan? Apakah banyak mahali?",
+      "OQ-002: Apakah manager perlu detail individu/SPP dan admin perlu membaca isi laporan? Default usulan: rekap manager; admin administratif",
+      "OQ-003: Apa beda Pekan 41 dan Pekan 2? Kapan pekan dibuka/ditutup; boleh terlambat/mundur?",
+      "OQ-004: Siapa memvalidasi koreksi laporan terkirim dan bagaimana alur existing?",
+      "OQ-005: Siapa mengajukan pergantian guru, ke mana persetujuan diarahkan, kapan efektif, siapa melihat sejarah?",
+      "OQ-006: Apakah satu anggota boleh di beberapa kelompok? Apakah perubahan berlaku di tengah pekan?",
+      "OQ-007: Apakah satu akun boleh beberapa role? Siapa reviewer pengganti jika Asmen menjadi pemohon/berhalangan?",
+      "OQ-008: Repository, stack, schema, staging, hosting, target rilis, dan penanggung jawab teknis?",
+      "OQ-009: Apakah ada anggota anak; siapa boleh mengakses apa, berapa lama data/audit disimpan, bagaimana penghapusan/backup?",
+      "OQ-010: Setuju satu pengajuan terbuka, tanpa penolakan permanen/penarikan, dan aktif langsung setelah disetujui?",
+      "OQ-011: Apa target waktu tugas, performa, beban, pemulihan, dan daftar browser/perangkat?"
+    ]
+  },
+  "goals": [
+    {
+      "id": "G-001",
+      "title": "Guru bekerja dengan data sendiri",
+      "metric": "Nol akses berhasil pada skenario negatif lintas guru dan role",
+      "target": "Nol akses berhasil pada skenario negatif lintas guru dan role",
+      "measurement": "Uji UI, endpoint, pencarian, agregat, dan ekspor jika tersedia",
+      "provenance": "USER_INFERRED"
+    },
+    {
+      "id": "G-002",
+      "title": "Perhalaqahan berubah melalui validasi",
+      "metric": "Seluruh aktivasi buat/ubah berasal dari persetujuan asisten manager berwenang",
+      "target": "Seluruh aktivasi buat/ubah berasal dari persetujuan asisten manager berwenang",
+      "measurement": "Audit transisi dan uji persetujuan",
+      "provenance": "USER_INFERRED"
+    },
+    {
+      "id": "G-003",
+      "title": "Pelaporan lama tetap berfungsi",
+      "metric": "Seluruh field, kode pilihan, dan hasil laporan yang diinventaris tetap tersedia",
+      "target": "Seluruh field, kode pilihan, dan hasil laporan yang diinventaris tetap tersedia",
+      "measurement": "Uji regresi dan rekonsiliasi data",
+      "provenance": "USER_INFERRED"
+    },
+    {
+      "id": "G-004",
+      "title": "Pengguna mudah menemukan pekerjaannya",
+      "metric": "Target waktu penyelesaian tugas dan kenaikan ketepatan pelaporan: UNSPECIFIED",
+      "target": "Target waktu penyelesaian tugas dan kenaikan ketepatan pelaporan: UNSPECIFIED",
+      "measurement": "Ukur baseline sebelum rilis dan evaluasi pada periode yang disepakati",
+      "provenance": "GPT_RECOMMENDED"
+    }
+  ],
+  "user_journeys": [
+    {
+      "id": "J-001",
+      "title": "Pengguna masuk dengan akun aktif dan penugasan sah",
+      "trigger": "Pengguna masuk dengan akun aktif dan penugasan sah",
+      "preconditions": [
+        "Pengguna masuk dengan akun aktif dan penugasan sah"
+      ],
+      "main_path": [
+        "Identifikasi role → beranda sesuai fungsi → tugas pekan ini"
+      ],
+      "failure_paths": [
+        "Belum ditugaskan: halaman kosong dengan penjelasan; tidak ada fallback ke data global. Sesi habis: login kembali"
+      ],
+      "completion_state": "Cakupan benar / FR-001–003",
+      "requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-003"
+      ]
+    },
+    {
+      "id": "J-002",
+      "title": "Guru ingin membuat kelompok",
+      "trigger": "Guru ingin membuat kelompok",
+      "preconditions": [
+        "Guru ingin membuat kelompok"
+      ],
+      "main_path": [
+        "Isi draf → validasi → ajukan → Asmen menilai → setujui → aktif"
+      ],
+      "failure_paths": [
+        "Belum ada Asmen: pengajuan tidak dikirim dan draf tetap ada. Dikembalikan: alasan → revisi → ajukan lagi"
+      ],
+      "completion_state": "Kelompok tervalidasi / FR-004,006,007",
+      "requirement_ids": [
+        "FR-004",
+        "FR-006",
+        "FR-007"
+      ]
+    },
+    {
+      "id": "J-003",
+      "title": "Guru ingin mengubah kelompok aktif miliknya",
+      "trigger": "Guru ingin mengubah kelompok aktif miliknya",
+      "preconditions": [
+        "Guru ingin mengubah kelompok aktif miliknya"
+      ],
+      "main_path": [
+        "Salin versi aktif → ubah draf → ajukan → Asmen melihat perbedaan → persetujuan"
+      ],
+      "failure_paths": [
+        "Versi sumber berubah: tampilkan konflik, tidak menimpa. Gagal persetujuan: data lama tetap aktif"
+      ],
+      "completion_state": "Versi baru aktif / FR-005–007",
+      "requirement_ids": [
+        "FR-005",
+        "FR-006",
+        "FR-007"
+      ]
+    },
+    {
+      "id": "J-004",
+      "title": "Pekan pelaporan terbuka dan kelompok aktif",
+      "trigger": "Pekan pelaporan terbuka dan kelompok aktif",
+      "preconditions": [
+        "Pekan pelaporan terbuka dan kelompok aktif"
+      ],
+      "main_path": [
+        "Buka laporan sendiri → isi informasi dan anggota → simpan draf → ringkasan → kirim"
+      ],
+      "failure_paths": [
+        "Tidak terlaksana: alasan mengikuti aturan existing. Offline/gagal simpan: jangan mengklaim tersimpan. Laporan terkirim dibuka baca saja"
+      ],
+      "completion_state": "Laporan dan field lama terjaga / FR-008–009",
+      "requirement_ids": [
+        "FR-008",
+        "FR-009"
+      ]
+    },
+    {
+      "id": "J-005",
+      "title": "Asmen/manager perlu pemantauan",
+      "trigger": "Asmen/manager perlu pemantauan",
+      "preconditions": [
+        "Asmen/manager perlu pemantauan"
+      ],
+      "main_path": [
+        "Buka rekap sesuai cakupan → pilih periode → lihat status pelaporan → tindak lanjuti"
+      ],
+      "failure_paths": [
+        "Data belum masuk bukan nol kehadiran; filter kosong dijelaskan; akses di luar cakupan ditolak"
+      ],
+      "completion_state": "Rekap terbatas / FR-003,010",
+      "requirement_ids": [
+        "FR-003",
+        "FR-010"
+      ]
+    },
+    {
+      "id": "J-006",
+      "title": "Admin mengatur akun/penugasan",
+      "trigger": "Admin mengatur akun/penugasan",
+      "preconditions": [
+        "Admin mengatur akun/penugasan"
+      ],
+      "main_path": [
+        "Buka administrasi → ubah role/cakupan dengan konfirmasi → audit → akses baru berlaku"
+      ],
+      "failure_paths": [
+        "Penugasan tidak valid ditolak; akun aktif tidak otomatis memperoleh data global"
+      ],
+      "completion_state": "Administrasi terpisah / FR-002,011–012",
+      "requirement_ids": [
+        "FR-002",
+        "FR-011",
+        "FR-012"
+      ]
+    }
+  ],
+  "functional_requirements": [
+    {
+      "id": "FR-001",
+      "title": "Empat role dan navigasi sesuai pekerjaan",
+      "description": "**Asal:** USER_CONFIRMED. **Nilai:** mengurangi menu dan informasi yang tidak relevan. **Dependensi:** FR-002. **Tujuan/perjalanan:** G-001,G-004 / J-001.\n\nSistem mengenali manager, asisten manager, guru, admin; beranda dan navigasi mengikuti matriks bagian 13.\n\n**Kriteria penerimaan:**\n1. Saat Guru masuk, halaman awal menampilkan pekerjaan/laporan kelompok sendiri, tanpa ringkasan global mahali dan keuangan global.\n2. Menu Guru menyediakan Halaqah Saya, Anggota Halaqah Saya, Laporan Saya, dan Pengajuan Saya sebagai rancangan penamaan; nama akhir dapat ditinjau.\n3. Saat role lain masuk, hanya menu dan tindakan yang diizinkan matriks yang tersedia; URL yang disembunyikan tetap ditolak server.\n4. Akun tanpa penugasan tidak melihat data semua kelompok.\n\n**Status:** loading, kosong, sukses, sesi habis, akses ditolak. **Audit:** kegagalan akses; jangan mencatat isi laporan di analitik navigasi.",
+      "user_value": "mengurangi menu dan informasi yang tidak relevan",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-002"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Saat Guru masuk, halaman awal menampilkan pekerjaan/laporan kelompok sendiri, tanpa ringkasan global mahali dan keuangan global.",
+        "Menu Guru menyediakan Halaqah Saya, Anggota Halaqah Saya, Laporan Saya, dan Pengajuan Saya sebagai rancangan penamaan; nama akhir dapat ditinjau.",
+        "Saat role lain masuk, hanya menu dan tindakan yang diizinkan matriks yang tersedia; URL yang disembunyikan tetap ditolak server.",
+        "Akun tanpa penugasan tidak melihat data semua kelompok."
+      ],
+      "states": [
+        "loading",
+        "kosong",
+        "sukses",
+        "sesi habis",
+        "akses ditolak"
+      ],
+      "related_goal_ids": [
+        "G-001",
+        "G-004"
+      ],
+      "related_journey_ids": [
+        "J-001"
+      ]
+    },
+    {
+      "id": "FR-002",
+      "title": "Otorisasi berdasarkan role dan penugasan",
+      "description": "**Asal:** USER_CONFIRMED (batas akses), GPT_RECOMMENDED (mekanisme server). **Nilai:** membatasi akses data. **Dependensi:** identitas/penugasan existing yang perlu diinspeksi. **Tujuan/perjalanan:** G-001 / J-001,J-006.\n\n**Kriteria penerimaan:**\n1. Guru A tidak dapat membaca atau mengubah halaqah, anggota, laporan, pengajuan, hitungan, atau hasil pencarian Guru B melalui UI maupun manipulasi identifier/parameter.\n2. Asmen hanya dapat melihat dan memvalidasi kelompok yang masuk cakupannya; manager hanya memperoleh rekap mahali yang ditugaskan.\n3. Field pengampu, role, mahali, reviewer, status persetujuan, dan pemilik dari client tidak dapat menaikkan hak akses pemohon.\n4. Perubahan role/penugasan berlaku pada permintaan berikutnya; cache/filter/link lama tidak mempertahankan akses yang sudah dicabut.\n5. Endpoint, unduhan/ekspor existing jika ada, dan agregat memakai kebijakan yang sama; tidak mengirim data terlarang ke browser lalu menyembunyikannya.\n\n**Status:** unauthorized, permission denied, sukses, stale session. **Audit:** perubahan hak akses dan penolakan akses tanpa payload sensitif.",
+      "user_value": "membatasi akses data",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Guru A tidak dapat membaca atau mengubah halaqah, anggota, laporan, pengajuan, hitungan, atau hasil pencarian Guru B melalui UI maupun manipulasi identifier/parameter.",
+        "Asmen hanya dapat melihat dan memvalidasi kelompok yang masuk cakupannya; manager hanya memperoleh rekap mahali yang ditugaskan.",
+        "Field pengampu, role, mahali, reviewer, status persetujuan, dan pemilik dari client tidak dapat menaikkan hak akses pemohon.",
+        "Perubahan role/penugasan berlaku pada permintaan berikutnya; cache/filter/link lama tidak mempertahankan akses yang sudah dicabut.",
+        "Endpoint, unduhan/ekspor existing jika ada, dan agregat memakai kebijakan yang sama; tidak mengirim data terlarang ke browser lalu menyembunyikannya."
+      ],
+      "states": [
+        "unauthorized",
+        "permission denied",
+        "sukses",
+        "stale session"
+      ],
+      "related_goal_ids": [
+        "G-001"
+      ],
+      "related_journey_ids": [
+        "J-001",
+        "J-006"
+      ]
+    },
+    {
+      "id": "FR-003",
+      "title": "Beranda dan tugas berdasarkan cakupan",
+      "description": "**Asal:** USER_CONFIRMED; urutan komponen GPT_RECOMMENDED. **Nilai:** menempatkan pekerjaan yang relevan di depan. **Dependensi:** FR-001,002,009. **Tujuan/perjalanan:** G-001,G-004 / J-001,J-005.\n\n**Kriteria penerimaan:**\n1. Guru melihat pekan aktif, kelompok sendiri, laporan belum dikirim, draf, dan status pengajuannya.\n2. Asmen melihat antrean validasi dan status pelaporan kelompok binaan; manager melihat rekap mahali; admin melihat administrasi akun/penugasan.\n3. Jumlah pada beranda memakai cakupan dan filter yang sama dengan daftar rinci.\n4. Nilai belum tersedia ditandai “Belum ada laporan/data”, bukan dianggap hasil nol atau performa buruk.\n\n**Status:** loading, kosong, filter kosong, sukses, gagal, stale. **Analitik:** kunjungan dan penyelesaian tugas tanpa identitas anggota.",
+      "user_value": "menempatkan pekerjaan yang relevan di depan",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-001",
+        "FR-002",
+        "FR-009"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Guru melihat pekan aktif, kelompok sendiri, laporan belum dikirim, draf, dan status pengajuannya.",
+        "Asmen melihat antrean validasi dan status pelaporan kelompok binaan; manager melihat rekap mahali; admin melihat administrasi akun/penugasan.",
+        "Jumlah pada beranda memakai cakupan dan filter yang sama dengan daftar rinci.",
+        "Nilai belum tersedia ditandai “Belum ada laporan/data”, bukan dianggap hasil nol atau performa buruk."
+      ],
+      "states": [
+        "loading",
+        "kosong",
+        "filter kosong",
+        "sukses",
+        "gagal",
+        "stale"
+      ],
+      "related_goal_ids": [
+        "G-001",
+        "G-004"
+      ],
+      "related_journey_ids": [
+        "J-001",
+        "J-005"
+      ]
+    },
+    {
+      "id": "FR-004",
+      "title": "Guru mengajukan perhalaqahan baru",
+      "description": "**Asal:** USER_CONFIRMED; detail validasi ASSUMPTION. **Nilai:** memberi guru kendali pengusulan. **Dependensi:** FR-002,006. **Tujuan/perjalanan:** G-002 / J-002.\n\n**Kriteria penerimaan:**\n1. Guru dapat menyimpan draf dan mengajukan data kelompok, guru, anggota, materi, jadwal, dan tempat; daftar field final mengikuti inventaris existing.\n2. Sistem menetapkan pemohon dari sesi, bukan input bebas; perubahan pengampu kepada orang lain mengikuti OQ-005.\n3. Data wajib yang belum lengkap mencegah pengajuan dan menampilkan kesalahan pada field; draf tidak wajib selengkap pengajuan.\n4. Pengajuan diterima berstatus Menunggu Validasi dan belum menjadi kelompok aktif atau sumber laporan.\n5. Jika reviewer berwenang belum ditetapkan, pengiriman diblokir dengan penjelasan dan draf dipertahankan.\n\n**Status:** draf kosong, validation error, tersimpan, pending, gagal simpan, retry. **Audit:** penyimpanan/pengajuan dan pemohon. **Catatan:** aturan nama/kode unik dan anggota lintas kelompok belum diputuskan.",
+      "user_value": "memberi guru kendali pengusulan",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-002",
+        "FR-006"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Guru dapat menyimpan draf dan mengajukan data kelompok, guru, anggota, materi, jadwal, dan tempat; daftar field final mengikuti inventaris existing.",
+        "Sistem menetapkan pemohon dari sesi, bukan input bebas; perubahan pengampu kepada orang lain mengikuti OQ-005.",
+        "Data wajib yang belum lengkap mencegah pengajuan dan menampilkan kesalahan pada field; draf tidak wajib selengkap pengajuan.",
+        "Pengajuan diterima berstatus Menunggu Validasi dan belum menjadi kelompok aktif atau sumber laporan.",
+        "Jika reviewer berwenang belum ditetapkan, pengiriman diblokir dengan penjelasan dan draf dipertahankan."
+      ],
+      "states": [
+        "draf kosong",
+        "validation error",
+        "tersimpan",
+        "pending",
+        "gagal simpan",
+        "retry"
+      ],
+      "related_goal_ids": [
+        "G-002"
+      ],
+      "related_journey_ids": [
+        "J-002"
+      ]
+    },
+    {
+      "id": "FR-005",
+      "title": "Guru mengajukan perubahan perhalaqahan sendiri",
+      "description": "**Asal:** USER_CONFIRMED; satu pengajuan terbuka ASSUMPTION. **Nilai:** pembaruan terkontrol. **Dependensi:** FR-002,004,006,007. **Tujuan/perjalanan:** G-002 / J-003.\n\n**Kriteria penerimaan:**\n1. Guru dapat memulai draf perubahan dari versi aktif kelompoknya, meliputi seluruh data perhalaqahan.\n2. Selama draf atau Menunggu Validasi, pembaca data aktif dan pelaporan tetap memakai versi yang telah disetujui.\n3. Pengajuan menyimpan versi sumber dan perbedaan nilai lama/usulan untuk reviewer; anggota ditampilkan sebagai penambahan/pengurangan, bukan daftar tanpa konteks.\n4. Jika versi aktif berubah sebelum persetujuan, aplikasi menolak menimpa dan meminta pembaruan/review ulang.\n5. Rancangan sementara membatasi satu pengajuan terbuka per kelompok; implementasi menunggu konfirmasi ASM-003.\n\n**Status:** draf, pending, konflik/stale, gagal, retry. **Audit:** objek, versi sumber, perubahan dan waktu. **Catatan:** riwayat anggota tidak boleh berubah surut.",
+      "user_value": "pembaruan terkontrol",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-002",
+        "FR-004",
+        "FR-006",
+        "FR-007"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Guru dapat memulai draf perubahan dari versi aktif kelompoknya, meliputi seluruh data perhalaqahan.",
+        "Selama draf atau Menunggu Validasi, pembaca data aktif dan pelaporan tetap memakai versi yang telah disetujui.",
+        "Pengajuan menyimpan versi sumber dan perbedaan nilai lama/usulan untuk reviewer; anggota ditampilkan sebagai penambahan/pengurangan, bukan daftar tanpa konteks.",
+        "Jika versi aktif berubah sebelum persetujuan, aplikasi menolak menimpa dan meminta pembaruan/review ulang.",
+        "Rancangan sementara membatasi satu pengajuan terbuka per kelompok; implementasi menunggu konfirmasi ASM-003."
+      ],
+      "states": [
+        "draf",
+        "pending",
+        "konflik/stale",
+        "gagal",
+        "retry"
+      ],
+      "related_goal_ids": [
+        "G-002"
+      ],
+      "related_journey_ids": [
+        "J-003"
+      ]
+    },
+    {
+      "id": "FR-006",
+      "title": "Validasi oleh asisten manager",
+      "description": "**Asal:** USER_CONFIRMED; larangan self-approval GPT_RECOMMENDED. **Nilai:** memastikan perubahan diperiksa pihak berwenang. **Dependensi:** FR-002,004,005. **Tujuan/perjalanan:** G-002 / J-002,J-003.\n\n**Kriteria penerimaan:**\n1. Asmen melihat antrean pengajuan binaannya serta detail usulan baru/perbandingan perubahan.\n2. Setujui hanya tersedia untuk pengajuan Menunggu Validasi dengan data valid, cakupan sah, dan versi sumber yang masih berlaku.\n3. Pengembalian untuk revisi wajib disertai alasan; guru melihat alasan, mengubah draf revisi, lalu dapat mengajukan ulang.\n4. Persetujuan menerapkan seluruh perubahan dan mencatat keputusan dalam satu operasi atomik; jika gagal, data aktif serta status tetap seperti sebelum percobaan.\n5. Percobaan persetujuan ganda/bersamaan menghasilkan satu keputusan efektif; retry tidak membuat kelompok atau versi ganda.\n6. Rekomendasi: pemohon tidak boleh menyetujui sendiri; bila akun multi-role diperbolehkan, tentukan pengganti reviewer sebelum implementasi.\n\n**Status:** pending, approved, returned, validation error, forbidden, konflik, timeout/retry. **Audit:** reviewer, keputusan, waktu, alasan, versi.",
+      "user_value": "memastikan perubahan diperiksa pihak berwenang",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-002",
+        "FR-004",
+        "FR-005"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Asmen melihat antrean pengajuan binaannya serta detail usulan baru/perbandingan perubahan.",
+        "Setujui hanya tersedia untuk pengajuan Menunggu Validasi dengan data valid, cakupan sah, dan versi sumber yang masih berlaku.",
+        "Pengembalian untuk revisi wajib disertai alasan; guru melihat alasan, mengubah draf revisi, lalu dapat mengajukan ulang.",
+        "Persetujuan menerapkan seluruh perubahan dan mencatat keputusan dalam satu operasi atomik; jika gagal, data aktif serta status tetap seperti sebelum percobaan.",
+        "Percobaan persetujuan ganda/bersamaan menghasilkan satu keputusan efektif; retry tidak membuat kelompok atau versi ganda.",
+        "Rekomendasi: pemohon tidak boleh menyetujui sendiri; bila akun multi-role diperbolehkan, tentukan pengganti reviewer sebelum implementasi."
+      ],
+      "states": [
+        "pending",
+        "approved",
+        "returned",
+        "validation error",
+        "forbidden",
+        "konflik",
+        "timeout/retry"
+      ],
+      "related_goal_ids": [
+        "G-002"
+      ],
+      "related_journey_ids": [
+        "J-002",
+        "J-003"
+      ]
+    },
+    {
+      "id": "FR-007",
+      "title": "Status, riwayat, dan hasil perubahan",
+      "description": "**Asal:** USER_CONFIRMED; detail state ASSUMPTION. **Nilai:** guru mengetahui apa yang berlaku dan apa yang perlu dikerjakan. **Dependensi:** FR-004–006. **Tujuan/perjalanan:** G-002 / J-002,J-003.\n\n**Kriteria penerimaan:**\n1. Alur minimum: Draf → Menunggu Validasi → Disetujui atau Dikembalikan untuk Revisi → Draf Revisi → Menunggu Validasi.\n2. Usulan yang dikirim tidak dapat diedit diam-diam; revisi yang dikirim ulang menyimpan jejak versi sebelumnya.\n3. Guru melihat status pengajuan sendiri, alasan pengembalian, waktu keputusan, dan versi aktif; Asmen melihat pengajuan dalam cakupannya.\n4. Sesudah disetujui, data aktif berubah dan riwayat lama tetap dapat ditelusuri oleh pengguna yang berwenang.\n5. “Ditolak permanen”, pembatalan, penarikan, dan pengarsipan bukan state MVP yang diasumsikan tersedia; perlu keputusan jika diperlukan.\n\n**Status:** seluruh state pengajuan, kosong, sukses, gagal, denied. **Audit:** transisi append-only sesuai kebijakan retensi yang akan diputuskan.",
+      "user_value": "guru mengetahui apa yang berlaku dan apa yang perlu dikerjakan",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-004",
+        "FR-005",
+        "FR-006"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Alur minimum: Draf → Menunggu Validasi → Disetujui atau Dikembalikan untuk Revisi → Draf Revisi → Menunggu Validasi.",
+        "Usulan yang dikirim tidak dapat diedit diam-diam; revisi yang dikirim ulang menyimpan jejak versi sebelumnya.",
+        "Guru melihat status pengajuan sendiri, alasan pengembalian, waktu keputusan, dan versi aktif; Asmen melihat pengajuan dalam cakupannya.",
+        "Sesudah disetujui, data aktif berubah dan riwayat lama tetap dapat ditelusuri oleh pengguna yang berwenang.",
+        "“Ditolak permanen”, pembatalan, penarikan, dan pengarsipan bukan state MVP yang diasumsikan tersedia; perlu keputusan jika diperlukan."
+      ],
+      "states": [
+        "seluruh state pengajuan",
+        "kosong",
+        "sukses",
+        "gagal",
+        "denied"
+      ],
+      "related_goal_ids": [
+        "G-002"
+      ],
+      "related_journey_ids": [
+        "J-002",
+        "J-003"
+      ]
+    },
+    {
+      "id": "FR-008",
+      "title": "Laporan pekanan mempertahankan fungsi dan field existing",
+      "description": "**Asal:** USER_CONFIRMED. **Nilai:** perbaikan akses tidak menghilangkan kebutuhan pelaporan. **Dependensi:** FR-002,009. **Tujuan/perjalanan:** G-003 / J-004.\n\n**Kriteria penerimaan:**\n1. Inventaris seluruh field, pilihan kode dan artinya, aturan wajib/bersyarat, perhitungan, status, dan koreksi laporan existing disetujui sebelum migrasi; field yang belum terlihat tidak boleh dihapus.\n2. Guru dapat mengisi laporan kelompoknya: pelaksanaan/alasan, buku/materi, tanggal, jam, halaman, serta seluruh isian anggota existing termasuk kehadiran, kontrol, kontak, buletin cetak/digital, dan SPP.\n3. Simpan Draft dan Kirim Laporan memberi hasil berbeda yang jelas; gagal simpan/kirim tidak menampilkan sukses.\n4. Ringkasan sebelum kirim memungkinkan guru memeriksa seluruh isian; validasi bersyarat “Tidak Terlaksana” mengikuti aturan existing yang telah diinventaris.\n5. Pengiriman ulang akibat klik ganda/retry tidak membuat duplikat laporan untuk kunci bisnis yang telah disepakati.\n6. Laporan Submitted tetap baca saja; pengajuan edit existing dipertahankan setelah alurnya diinventaris. Jangan otomatis memakai aturan validasi perhalaqahan untuk koreksi laporan (OQ-004).\n\n**Status:** loading, draf, validation error, submitted, offline, gagal/timeout/retry. **Audit:** simpan/kirim/koreksi tanpa isian pribadi di log umum.",
+      "user_value": "perbaikan akses tidak menghilangkan kebutuhan pelaporan",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-002",
+        "FR-009"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Inventaris seluruh field, pilihan kode dan artinya, aturan wajib/bersyarat, perhitungan, status, dan koreksi laporan existing disetujui sebelum migrasi; field yang belum terlihat tidak boleh dihapus.",
+        "Guru dapat mengisi laporan kelompoknya: pelaksanaan/alasan, buku/materi, tanggal, jam, halaman, serta seluruh isian anggota existing termasuk kehadiran, kontrol, kontak, buletin cetak/digital, dan SPP.",
+        "Simpan Draft dan Kirim Laporan memberi hasil berbeda yang jelas; gagal simpan/kirim tidak menampilkan sukses.",
+        "Ringkasan sebelum kirim memungkinkan guru memeriksa seluruh isian; validasi bersyarat “Tidak Terlaksana” mengikuti aturan existing yang telah diinventaris.",
+        "Pengiriman ulang akibat klik ganda/retry tidak membuat duplikat laporan untuk kunci bisnis yang telah disepakati.",
+        "Laporan Submitted tetap baca saja; pengajuan edit existing dipertahankan setelah alurnya diinventaris. Jangan otomatis memakai aturan validasi perhalaqahan untuk koreksi laporan (OQ-004)."
+      ],
+      "states": [
+        "loading",
+        "draf",
+        "validation error",
+        "submitted",
+        "offline",
+        "gagal/timeout/retry"
+      ],
+      "related_goal_ids": [
+        "G-003"
+      ],
+      "related_journey_ids": [
+        "J-004"
+      ]
+    },
+    {
+      "id": "FR-009",
+      "title": "Periode dan keutuhan sejarah",
+      "description": "**Asal:** GPT_RECOMMENDED untuk konsistensi; kebutuhan preservasi USER_INFERRED. **Nilai:** laporan tidak bergeser karena perubahan master. **Dependensi:** FR-005,008. **Tujuan/perjalanan:** G-003 / J-004.\n\n**Kriteria penerimaan:**\n1. Satu periode mempunyai identitas dan rentang tanggal yang konsisten di beranda, daftar, form, dan rekap.\n2. Jika “Pekan 41” dan “Pekan 2” mewakili kalender berbeda, keduanya diberi label yang menjelaskan artinya; definisi menunggu OQ-003.\n3. Perubahan guru, anggota, jadwal, atau materi tidak menghapus maupun menulis ulang laporan terkirim; laporan tetap menunjuk konteks historisnya.\n4. Pilihan strategi snapshot/versi dan tanggal efektif harus ditetapkan sebelum migrasi; tidak menebak akses guru lama/baru ke laporan historis.\n\n**Status:** periode kosong, invalid, stale, sukses. **Audit:** koreksi periode jika diizinkan; tidak ada migrasi destruktif otomatis.",
+      "user_value": "laporan tidak bergeser karena perubahan master",
+      "priority": "MVP",
+      "provenance": "USER_INFERRED",
+      "dependencies": [
+        "FR-005",
+        "FR-008"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Satu periode mempunyai identitas dan rentang tanggal yang konsisten di beranda, daftar, form, dan rekap.",
+        "Jika “Pekan 41” dan “Pekan 2” mewakili kalender berbeda, keduanya diberi label yang menjelaskan artinya; definisi menunggu OQ-003.",
+        "Perubahan guru, anggota, jadwal, atau materi tidak menghapus maupun menulis ulang laporan terkirim; laporan tetap menunjuk konteks historisnya.",
+        "Pilihan strategi snapshot/versi dan tanggal efektif harus ditetapkan sebelum migrasi; tidak menebak akses guru lama/baru ke laporan historis."
+      ],
+      "states": [
+        "periode kosong",
+        "invalid",
+        "stale",
+        "sukses"
+      ],
+      "related_goal_ids": [
+        "G-003"
+      ],
+      "related_journey_ids": [
+        "J-004"
+      ]
+    },
+    {
+      "id": "FR-010",
+      "title": "Pemantauan manager dan asisten manager",
+      "description": "**Asal:** USER_CONFIRMED; detail drill-down UNSPECIFIED. **Nilai:** pemantauan mengikuti tanggung jawab. **Dependensi:** FR-002,003,008,009. **Tujuan/perjalanan:** G-001,G-003 / J-005.\n\n**Kriteria penerimaan:**\n1. Manager melihat rekap mahali yang ditugaskan; Asmen melihat rekap dan status pelaporan kelompok binaannya.\n2. Filter periode dan kelompok tidak memperluas cakupan akses dan selalu memperbarui daftar serta agregat dengan kondisi sama.\n3. Agregat mempertahankan definisi existing yang disahkan; perubahan formula bukan bagian perbaikan ini.\n4. Detail pribadi/SPP manager hanya diaktifkan setelah OQ-002 diputuskan; default sementara hanya rekap.\n5. Sistem membedakan laporan belum dikirim, tidak terlaksana, dan nilai terlapor nol.\n\n**Status:** loading, kosong/filter kosong, sukses, gagal, stale, denied. **Analitik:** penggunaan filter tanpa payload pribadi.",
+      "user_value": "pemantauan mengikuti tanggung jawab",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-002",
+        "FR-003",
+        "FR-008",
+        "FR-009"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Manager melihat rekap mahali yang ditugaskan; Asmen melihat rekap dan status pelaporan kelompok binaannya.",
+        "Filter periode dan kelompok tidak memperluas cakupan akses dan selalu memperbarui daftar serta agregat dengan kondisi sama.",
+        "Agregat mempertahankan definisi existing yang disahkan; perubahan formula bukan bagian perbaikan ini.",
+        "Detail pribadi/SPP manager hanya diaktifkan setelah OQ-002 diputuskan; default sementara hanya rekap.",
+        "Sistem membedakan laporan belum dikirim, tidak terlaksana, dan nilai terlapor nol."
+      ],
+      "states": [
+        "loading",
+        "kosong/filter kosong",
+        "sukses",
+        "gagal",
+        "stale",
+        "denied"
+      ],
+      "related_goal_ids": [
+        "G-001",
+        "G-003"
+      ],
+      "related_journey_ids": [
+        "J-005"
+      ]
+    },
+    {
+      "id": "FR-011",
+      "title": "Administrasi akun, role, dan penugasan",
+      "description": "**Asal:** USER_CONFIRMED untuk akun/role/pengaturan; penugasan akses merupakan turunan kebutuhan. **Nilai:** cakupan role dapat dioperasikan. **Dependensi:** FR-002. **Tujuan/perjalanan:** G-001 / J-006.\n\n**Kriteria penerimaan:**\n1. Admin dapat mengelola akun, role dan pengaturan sesuai fungsi existing yang diinventaris; perubahan hak akses menampilkan ringkasan sebelum disimpan.\n2. Hubungan guru–kelompok, Asmen–binaan, manager–mahali disimpan eksplisit; penugasan tidak valid ditolak.\n3. Admin tidak otomatis mendapat izin mengubah laporan atau menyetujui perhalaqahan.\n4. Perubahan penugasan tidak memindahkan kepemilikan historis tanpa aturan OQ-005/OQ-006.\n\n**Status:** sukses, validation error, forbidden, konflik, gagal. **Audit:** nilai akses sebelum/sesudah, pelaku, waktu; jangan catat password/token.",
+      "user_value": "cakupan role dapat dioperasikan",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-002"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Admin dapat mengelola akun, role dan pengaturan sesuai fungsi existing yang diinventaris; perubahan hak akses menampilkan ringkasan sebelum disimpan.",
+        "Hubungan guru–kelompok, Asmen–binaan, manager–mahali disimpan eksplisit; penugasan tidak valid ditolak.",
+        "Admin tidak otomatis mendapat izin mengubah laporan atau menyetujui perhalaqahan.",
+        "Perubahan penugasan tidak memindahkan kepemilikan historis tanpa aturan OQ-005/OQ-006."
+      ],
+      "states": [
+        "sukses",
+        "validation error",
+        "forbidden",
+        "konflik",
+        "gagal"
+      ],
+      "related_goal_ids": [
+        "G-001"
+      ],
+      "related_journey_ids": [
+        "J-006"
+      ]
+    },
+    {
+      "id": "FR-012",
+      "title": "Audit dan kegagalan yang dapat dipulihkan",
+      "description": "**Asal:** USER_CONFIRMED untuk riwayat perubahan; GPT_RECOMMENDED untuk detail operasi. **Nilai:** keputusan dapat ditelusuri dan kegagalan tidak merusak data. **Dependensi:** FR-002,006–011. **Tujuan/perjalanan:** G-001–003 / J-002,J-003,J-004,J-006.\n\n**Kriteria penerimaan:**\n1. Audit mencatat pelaku, tindakan, objek/versi, waktu, hasil, dan alasan keputusan jika ada; akses audit mengikuti cakupan tugas.\n2. Kegagalan parsial tidak menghasilkan status Disetujui dengan data lama atau data baru tanpa keputusan.\n3. Retry yang sama tidak menduplikasi efek; waktu tunggu yang habis memberi pesan hasil belum pasti dan cara memeriksa status sebelum mencoba ulang.\n4. Log operasional/analitik tidak berisi password, token, data kontak pribadi, atau seluruh isi laporan; detail perbedaan disimpan dalam riwayat bisnis dengan akses terbatas.\n\n**Status:** sukses, partial failure, timeout, retry, denied. **Catatan:** retensi audit dan pelaku yang boleh membacanya perlu ditetapkan.",
+      "user_value": "keputusan dapat ditelusuri dan kegagalan tidak merusak data",
+      "priority": "MVP",
+      "provenance": "USER_CONFIRMED",
+      "dependencies": [
+        "FR-002",
+        "FR-006",
+        "FR-007",
+        "FR-008",
+        "FR-009",
+        "FR-010",
+        "FR-011"
+      ],
+      "preconditions": [
+        "Akun aktif, sesi sah, dan penugasan server valid; detail prasyarat pada description."
+      ],
+      "acceptance_criteria": [
+        "Audit mencatat pelaku, tindakan, objek/versi, waktu, hasil, dan alasan keputusan jika ada; akses audit mengikuti cakupan tugas.",
+        "Kegagalan parsial tidak menghasilkan status Disetujui dengan data lama atau data baru tanpa keputusan.",
+        "Retry yang sama tidak menduplikasi efek; waktu tunggu yang habis memberi pesan hasil belum pasti dan cara memeriksa status sebelum mencoba ulang.",
+        "Log operasional/analitik tidak berisi password, token, data kontak pribadi, atau seluruh isi laporan; detail perbedaan disimpan dalam riwayat bisnis dengan akses terbatas."
+      ],
+      "states": [
+        "sukses",
+        "partial failure",
+        "timeout",
+        "retry",
+        "denied"
+      ],
+      "related_goal_ids": [
+        "G-001",
+        "G-002",
+        "G-003"
+      ],
+      "related_journey_ids": [
+        "J-002",
+        "J-003",
+        "J-004",
+        "J-006"
+      ]
+    }
+  ],
+  "non_functional_requirements": [
+    {
+      "id": "NFR-001",
+      "category": "Quality and operations",
+      "requirement": "Otorisasi server mencakup semua operasi dan agregat; semua uji negatif cakupan harus ditolak",
+      "target": "Otorisasi server mencakup semua operasi dan agregat; semua uji negatif cakupan harus ditolak",
+      "measurement": "Uji integrasi lintas akun/role; GPT_RECOMMENDED, mendukung G-001",
+      "scope": "MVP; detail di PRD bagian 11 dan 17",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "NFR-002",
+      "category": "Quality and operations",
+      "requirement": "Persetujuan atomik, konflik versi terdeteksi, retry tidak menghasilkan duplikat",
+      "target": "Persetujuan atomik, konflik versi terdeteksi, retry tidak menghasilkan duplikat",
+      "measurement": "Uji race, timeout, dan injeksi kegagalan; GPT_RECOMMENDED",
+      "scope": "MVP; detail di PRD bagian 11 dan 17",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "NFR-003",
+      "category": "Quality and operations",
+      "requirement": "Seluruh alur inti empat role wajib mobile friendly; kriteria rancangan: viewport 360/390/430/768/1280 CSS px, target sentuh minimal 44 × 44 px, input utama minimal 16 px, tanpa overflow halaman atau fungsi khusus desktop",
+      "target": "Seluruh alur inti empat role wajib mobile friendly; kriteria rancangan: viewport 360/390/430/768/1280 CSS px, target sentuh minimal 44 × 44 px, input utama minimal 16 px, tanpa overflow halaman atau fungsi khusus desktop",
+      "measurement": "USER_CONFIRMED untuk hasil mobile friendly; detail teknis rancangan dan uji tugas, keyboard layar, orientasi, fokus, label/error mengikuti bagian 11",
+      "scope": "MVP; detail di PRD bagian 11 dan 17",
+      "provenance": "USER_CONFIRMED"
+    },
+    {
+      "id": "NFR-004",
+      "category": "Quality and operations",
+      "requirement": "Data pribadi, keuangan, kredensial tidak masuk log/analitik umum; riwayat bisnis dibatasi",
+      "target": "Data pribadi, keuangan, kredensial tidak masuk log/analitik umum; riwayat bisnis dibatasi",
+      "measurement": "Review logging, payload, dan izin audit; GPT_RECOMMENDED",
+      "scope": "MVP; detail di PRD bagian 11 dan 17",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "NFR-005",
+      "category": "Quality and operations",
+      "requirement": "Target p95 latency, pengguna bersamaan, ukuran dataset, uptime, RPO/RTO: UNSPECIFIED",
+      "target": "Target p95 latency, pengguna bersamaan, ukuran dataset, uptime, RPO/RTO: UNSPECIFIED",
+      "measurement": "Benchmark setelah beban dan lingkungan disepakati; tanpa klaim performa",
+      "scope": "MVP; detail di PRD bagian 11 dan 17",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "NFR-006",
+      "category": "Quality and operations",
+      "requirement": "Field, pilihan, nominal, periode, dan jumlah laporan hasil migrasi cocok dengan inventaris baseline yang disahkan",
+      "target": "Field, pilihan, nominal, periode, dan jumlah laporan hasil migrasi cocok dengan inventaris baseline yang disahkan",
+      "measurement": "Rekonsiliasi pra/pascamigrasi dan restore di staging; USER_INFERRED",
+      "scope": "MVP; detail di PRD bagian 11 dan 17",
+      "provenance": "USER_INFERRED"
+    },
+    {
+      "id": "NFR-007",
+      "category": "Quality and operations",
+      "requirement": "Bahasa Indonesia dan tanggal/rentang pekan konsisten; zona waktu mengikuti kebijakan produk yang disepakati",
+      "target": "Bahasa Indonesia dan tanggal/rentang pekan konsisten; zona waktu mengikuti kebijakan produk yang disepakati",
+      "measurement": "Uji batas tanggal dan format; GPT_RECOMMENDED. Asia/Jakarta digunakan pada dokumen, bukan bukti seluruh pengguna di zona itu",
+      "scope": "MVP; detail di PRD bagian 11 dan 17",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "NFR-008",
+      "category": "Quality and operations",
+      "requirement": "Browser dan perangkat sasaran selain Edge: UNSPECIFIED; suite otorisasi dan transisi harus dapat dijalankan ulang",
+      "target": "Browser dan perangkat sasaran selain Edge: UNSPECIFIED; suite otorisasi dan transisi harus dapat dijalankan ulang",
+      "measurement": "Uji kompatibilitas setelah daftar sasaran disepakati; pemeliharaan dan observabilitas masuk rencana rilis",
+      "scope": "MVP; detail di PRD bagian 11 dan 17",
+      "provenance": "GPT_RECOMMENDED"
+    }
+  ],
+  "data_requirements": [
+    {
+      "id": "DATA-001",
+      "entity": "Akun/Role/Penugasan",
+      "description": "Identitas terautentikasi; empat role. Multi-role dan masa berlaku perlu keputusan. Tidak menyimpan kredensial di PRD/log",
+      "fields": [
+        " user_id, role, aktif, scope_id, masa berlaku"
+      ],
+      "validation": [
+        "Identitas terautentikasi; empat role. Multi-role dan masa berlaku perlu keputusan. Tidak menyimpan kredensial di PRD/log"
+      ],
+      "sensitivity": "Internal terbatas; klasifikasi rinci pada PRD bagian 14 dan 18",
+      "lifecycle": "Identitas terautentikasi; empat role. Multi-role dan masa berlaku perlu keputusan. Tidak menyimpan kredensial di PRD/log",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "DATA-002",
+      "entity": "Struktur cakupan",
+      "description": "Hierarki existing harus diinspeksi; identifier cakupan tidak dipercaya dari client",
+      "fields": [
+        " mahali, Asmen, kelompok, relasi penugasan"
+      ],
+      "validation": [
+        "Hierarki existing harus diinspeksi; identifier cakupan tidak dipercaya dari client"
+      ],
+      "sensitivity": "Internal terbatas; klasifikasi rinci pada PRD bagian 14 dan 18",
+      "lifecycle": "Hierarki existing harus diinspeksi; identifier cakupan tidak dipercaya dari client",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "DATA-003",
+      "entity": "Perhalaqahan aktif",
+      "description": "Guru–kelompok dan keanggotaan eksplisit; kode unik sesuai aturan existing; aktif setelah validasi",
+      "fields": [
+        " id/kode, nama, guru, anggota, materi, jadwal, tempat, cakupan, versi"
+      ],
+      "validation": [
+        "Guru–kelompok dan keanggotaan eksplisit; kode unik sesuai aturan existing; aktif setelah validasi"
+      ],
+      "sensitivity": "Internal terbatas; klasifikasi rinci pada PRD bagian 14 dan 18",
+      "lifecycle": "Guru–kelompok dan keanggotaan eksplisit; kode unik sesuai aturan existing; aktif setelah validasi",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "DATA-004",
+      "entity": "Pengajuan/revisi",
+      "description": "Perubahan anggota disimpan sebagai diff atau representasi setara; pengajuan disetujui tidak diedit; retry tidak menghasilkan efek ganda",
+      "fields": [
+        " id, create/update, pemohon, kelompok target, versi sumber, payload usulan, status, reviewer, alasan, timestamps"
+      ],
+      "validation": [
+        "Perubahan anggota disimpan sebagai diff atau representasi setara; pengajuan disetujui tidak diedit; retry tidak menghasilkan efek ganda"
+      ],
+      "sensitivity": "Internal terbatas; klasifikasi rinci pada PRD bagian 14 dan 18",
+      "lifecycle": "Perubahan anggota disimpan sebagai diff atau representasi setara; pengajuan disetujui tidak diedit; retry tidak menghasilkan efek ganda",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "DATA-005",
+      "entity": "Anggota/pemuda",
+      "description": "Data pribadi dan kegiatan terbatas. Jangan menambah field identitas/kontak yang tidak dibutuhkan; aturan keanggotaan rangkap belum diketahui",
+      "fields": [
+        " id, atribut existing, tipe, relasi kelompok"
+      ],
+      "validation": [
+        "Data pribadi dan kegiatan terbatas. Jangan menambah field identitas/kontak yang tidak dibutuhkan; aturan keanggotaan rangkap belum diketahui"
+      ],
+      "sensitivity": "Internal terbatas; klasifikasi rinci pada PRD bagian 14 dan 18",
+      "lifecycle": "Data pribadi dan kegiatan terbatas. Jangan menambah field identitas/kontak yang tidak dibutuhkan; aturan keanggotaan rangkap belum diketahui",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "DATA-006",
+      "entity": "Periode dan laporan",
+      "description": "Kunci unik laporan mengikuti aturan existing yang disahkan; konteks historis tidak berubah oleh master terkini",
+      "fields": [
+        " id periode, tanggal mulai/akhir, kelompok/versi konteks, status, field laporan existing"
+      ],
+      "validation": [
+        "Kunci unik laporan mengikuti aturan existing yang disahkan; konteks historis tidak berubah oleh master terkini"
+      ],
+      "sensitivity": "Internal terbatas; klasifikasi rinci pada PRD bagian 14 dan 18",
+      "lifecycle": "Kunci unik laporan mengikuti aturan existing yang disahkan; konteks historis tidak berubah oleh master terkini",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "DATA-007",
+      "entity": "Detail laporan anggota",
+      "description": "Kode dan makna harus dipertahankan; nominal/angka divalidasi sesuai aturan existing, bukan ditebak",
+      "fields": [
+        " relasi laporan–anggota, kehadiran, kontrol, kontak, buletin, SPP, field lain hasil inventaris"
+      ],
+      "validation": [
+        "Kode dan makna harus dipertahankan; nominal/angka divalidasi sesuai aturan existing, bukan ditebak"
+      ],
+      "sensitivity": "Internal terbatas; klasifikasi rinci pada PRD bagian 14 dan 18",
+      "lifecycle": "Kode dan makna harus dipertahankan; nominal/angka divalidasi sesuai aturan existing, bukan ditebak",
+      "provenance": "GPT_RECOMMENDED"
+    },
+    {
+      "id": "DATA-008",
+      "entity": "Audit",
+      "description": "Riwayat bisnis terbatas; log umum tidak memuat payload sensitif; retensi/deletion belum ditetapkan",
+      "fields": [
+        " actor, action, target/version, time, outcome, reason, correlation_id"
+      ],
+      "validation": [
+        "Riwayat bisnis terbatas; log umum tidak memuat payload sensitif; retensi/deletion belum ditetapkan"
+      ],
+      "sensitivity": "Internal terbatas; klasifikasi rinci pada PRD bagian 14 dan 18",
+      "lifecycle": "Riwayat bisnis terbatas; log umum tidak memuat payload sensitif; retensi/deletion belum ditetapkan",
+      "provenance": "GPT_RECOMMENDED"
+    }
+  ],
+  "integrations": [
+    {
+      "id": "INT-001",
+      "system": "Sistem internal existing",
+      "purpose": "INT-001 — Integrasi internal dengan autentikasi, master kelompok/anggota, periode, laporan, dan perhitungan existing. Status USER_INFERRED: produk existing harus tetap bekerja; cara integrasi UNSPECIFIED sampai inspeksi repository. Arah baca/tulis internal, autentikasi melalui sesi existing, validasi cakupan di setiap operasi. Trigger: pembukaan halaman, simpan, pengajuan, keputusan. Kegagalan memberi status jelas; persetujuan atomik; retry idempoten. Timeout dan rate limit numerik belum diketahui. Tidak ada integrasi pihak ketiga baru yang disetujui.",
+      "direction": "Internal baca/tulis",
+      "authentication": "Sesi existing; scope server wajib",
+      "trigger": "Buka halaman, simpan, ajukan, putuskan",
+      "failure_behavior": "Atomik, status jelas dan retry idempoten; angka timeout/rate limit UNSPECIFIED",
+      "provenance": "USER_INFERRED"
+    }
+  ],
+  "ai_requirements": [],
+  "roles_permissions": [
+    {
+      "role": "Guru",
+      "capability": "Lihat beranda",
+      "allowed": true,
+      "conditions": "Tugas sendiri; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Lihat beranda",
+      "allowed": true,
+      "conditions": "Binaan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Lihat beranda",
+      "allowed": true,
+      "conditions": "Rekap mahali; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Lihat beranda",
+      "allowed": true,
+      "conditions": "Administrasi; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Lihat halaqah/anggota",
+      "allowed": true,
+      "conditions": "Sendiri; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Lihat halaqah/anggota",
+      "allowed": true,
+      "conditions": "Binaan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Lihat halaqah/anggota",
+      "allowed": true,
+      "conditions": "Rekap; detail belum diputuskan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Lihat halaqah/anggota",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Buat halaqah",
+      "allowed": true,
+      "conditions": "Ajukan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Buat halaqah",
+      "allowed": true,
+      "conditions": "Validasi pengajuan binaan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Buat halaqah",
+      "allowed": false,
+      "conditions": "Tidak ditetapkan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Buat halaqah",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Ubah master halaqah",
+      "allowed": true,
+      "conditions": "Ajukan perubahan sendiri; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Ubah master halaqah",
+      "allowed": true,
+      "conditions": "Setujui/kembalikan binaan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Ubah master halaqah",
+      "allowed": false,
+      "conditions": "Tidak ditetapkan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Ubah master halaqah",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Lihat pengajuan",
+      "allowed": true,
+      "conditions": "Sendiri; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Lihat pengajuan",
+      "allowed": true,
+      "conditions": "Binaan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Lihat pengajuan",
+      "allowed": false,
+      "conditions": "Belum diputuskan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Lihat pengajuan",
+      "allowed": true,
+      "conditions": "Audit teknis terbatas bila diperlukan; belum diputuskan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Isi/kirim laporan",
+      "allowed": true,
+      "conditions": "Kelompok sendiri; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Isi/kirim laporan",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Isi/kirim laporan",
+      "allowed": false,
+      "conditions": "Tidak; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Isi/kirim laporan",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Lihat laporan",
+      "allowed": true,
+      "conditions": "Sendiri; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Lihat laporan",
+      "allowed": true,
+      "conditions": "Binaan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Lihat laporan",
+      "allowed": true,
+      "conditions": "Rekap; detail belum diputuskan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Lihat laporan",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Edit laporan terkirim",
+      "allowed": true,
+      "conditions": "Alur pengajuan existing; keputusan reviewer belum diketahui; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Edit laporan terkirim",
+      "allowed": false,
+      "conditions": "Belum diputuskan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Edit laporan terkirim",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Edit laporan terkirim",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Lihat SPP",
+      "allowed": true,
+      "conditions": "Kelompok sendiri; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Lihat SPP",
+      "allowed": true,
+      "conditions": "Binaan sesuai tugas pelaporan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Lihat SPP",
+      "allowed": true,
+      "conditions": "Rekap; rincian belum diputuskan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Lihat SPP",
+      "allowed": false,
+      "conditions": "Tidak otomatis; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Ekspor",
+      "allowed": false,
+      "conditions": "Tidak ada fitur baru; existing mengikuti cakupan; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Ekspor",
+      "allowed": true,
+      "conditions": "Sama; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Ekspor",
+      "allowed": true,
+      "conditions": "Sama; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Ekspor",
+      "allowed": true,
+      "conditions": "Sama; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Kelola akun/role/pengaturan",
+      "allowed": false,
+      "conditions": "Tidak; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Kelola akun/role/pengaturan",
+      "allowed": false,
+      "conditions": "Tidak; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Kelola akun/role/pengaturan",
+      "allowed": false,
+      "conditions": "Tidak; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Kelola akun/role/pengaturan",
+      "allowed": true,
+      "conditions": "Ya; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Guru",
+      "capability": "Hapus/arsip kelompok",
+      "allowed": false,
+      "conditions": "Belum diputuskan; bukan tindakan baru MVP; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Asmen",
+      "capability": "Hapus/arsip kelompok",
+      "allowed": true,
+      "conditions": "Sama; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Manager",
+      "capability": "Hapus/arsip kelompok",
+      "allowed": true,
+      "conditions": "Sama; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    },
+    {
+      "role": "Admin",
+      "capability": "Hapus/arsip kelompok",
+      "allowed": true,
+      "conditions": "Sama; belum diputuskan berarti deny by default untuk fitur baru. Tidak memberi izin di luar scope."
+    }
+  ],
+  "application_states": [
+    "Loading: Penanda muat; tombol kirim/review tidak dapat dipicu berulang",
+    "Kosong awal: Jelaskan belum ada penugasan/halaqah/pengajuan; tampilkan tindakan yang berwenang",
+    "Filter kosong: “Tidak ada hasil untuk filter ini”, sediakan reset",
+    "Sukses: Konfirmasi objek, status terbaru, dan tindakan berikutnya",
+    "Validasi: Pesan pada field dan ringkasan; input tidak hilang",
+    "Sistem error: Pesan dapat dipahami dan identifier bantuan tanpa rincian internal",
+    "Unauthorized: Minta login kembali; jangan bocorkan data atau hilangkan input tanpa penjelasan",
+    "Permission denied: Tolak server; UI menjelaskan akses terbatas tanpa membocorkan objek",
+    "Offline: Jelaskan belum tersimpan; sinkronisasi offline tidak termasuk MVP",
+    "Stale / konflik: Tunjukkan bahwa versi berubah dan minta review ulang",
+    "Partial completion: Operasi persetujuan atomik; jangan laporkan sukses sebagian",
+    "Timeout / retry: Periksa status operasi; cegah efek ganda sebelum retry",
+    "Rate limit: Beri pesan coba lagi sesuai kebijakan existing; nilai batas belum diketahui"
+  ],
+  "security_privacy": [
+    {
+      "text": "Titik kepercayaan: client tidak berwenang menentukan role, kepemilikan, reviewer, atau status aktif. Server memeriksa sesi, penugasan, keadaan objek, dan versi. List/search/detail/agregat/ekspor dilindungi kebijakan sama. Hak admin aplikasi dipisah dari keputusan bisnis Asmen. Gunakan mekanisme autentikasi, validasi, proteksi request, dan pengelolaan secret existing setelah diinspeksi; jangan menulis kredensial di source, fixture, atau dokumen.\n\nPersetujuan dan perubahan akses dicatat. Tampilan error tidak membocorkan rincian pribadi atau keberadaan objek di luar cakupan. Kebijakan transport, enkripsi penyimpanan, backup, akses infrastruktur, retensi, penghapusan, pemulihan akun, dan batas percobaan login perlu diverifikasi sebelum rilis; tidak ada klaim kepatuhan atau keamanan implementasi saat ini.\n\nREQUIRES_SPECIALIST_REVIEW: tata kelola data pribadi/kegiatan yang berpotensi mengungkap keyakinan dan data SPP; status usia anggota dan kebutuhan penanganan data anak perlu diklarifikasi. Ini catatan peninjauan desain, bukan kesimpulan hukum atau perluasan fitur.",
+      "provenance": "GPT_RECOMMENDED",
+      "requires_confirmation": true
+    }
+  ],
+  "analytics_observability": [
+    {
+      "text": "Catat peristiwa tugas: draft_saved, request_submitted, request_returned, request_approved, report_submitted, authorization_denied, assignment_changed. Definisi, penyimpanan dan alat analitik belum dipilih. Data minimum: tipe event, waktu, identifier operasi/objek yang dibatasi aksesnya, role/cakupan yang diperlukan, hasil, durasi. Jangan kirim nama anggota, alasan pribadi, nominal individual, kontak, atau payload form ke layanan analitik eksternal.\n\nPantau kegagalan persetujuan, konflik versi, percobaan duplikat, dan penolakan akses berulang. Ambang alert dan penerima operasional UNSPECIFIED; tidak menambahkan notifikasi eksternal. Rekap performa mempertahankan formula existing sampai pemilik definisi metrik menyetujuinya.",
+      "provenance": "GPT_RECOMMENDED",
+      "requires_confirmation": true
+    }
+  ],
+  "testing": [
+    {
+      "id": "TEST-001",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Role/menu dan akun tanpa penugasan; empat akun role serta minimal dua Guru/Asmen berbeda",
+      "requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-003"
+      ]
+    },
+    {
+      "id": "TEST-002",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Identifier/parameter tampering, pencarian, agregat, ekspor existing, pencabutan akses, client field escalation",
+      "requirement_ids": [
+        "FR-002",
+        "FR-010",
+        "FR-011"
+      ]
+    },
+    {
+      "id": "TEST-003",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Buat halaqah → draf → pengajuan → persetujuan → aktif; tanpa reviewer dan validasi field",
+      "requirement_ids": [
+        "FR-004",
+        "FR-006",
+        "FR-007"
+      ]
+    },
+    {
+      "id": "TEST-004",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Perubahan → data lama tetap aktif → dikembalikan dengan alasan → revisi → disetujui; riwayat lengkap",
+      "requirement_ids": [
+        "FR-005",
+        "FR-006",
+        "FR-007",
+        "FR-012"
+      ]
+    },
+    {
+      "id": "TEST-005",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Dua reviewer bersamaan, versi stale, timeout, retry, kegagalan transaksi; tidak ada efek parsial/ganda",
+      "requirement_ids": [
+        "FR-005",
+        "FR-006",
+        "FR-012"
+      ]
+    },
+    {
+      "id": "TEST-006",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Field/kode/aturan laporan existing; simpan draf, tidak terlaksana, kirim, submitted read-only, alur koreksi existing",
+      "requirement_ids": [
+        "FR-008"
+      ]
+    },
+    {
+      "id": "TEST-007",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Batas periode, dua label nomor pekan, perubahan anggota/guru dan akses historis sesuai keputusan",
+      "requirement_ids": [
+        "FR-009"
+      ]
+    },
+    {
+      "id": "TEST-008",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Rekap sesuai scope/filter; belum ada data vs nilai nol; formula baseline tidak berubah",
+      "requirement_ids": [
+        "FR-003",
+        "FR-010"
+      ]
+    },
+    {
+      "id": "TEST-009",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Audit, kebocoran log, perubahan hak akses, kegagalan dan retry",
+      "requirement_ids": [
+        "FR-011",
+        "FR-012"
+      ]
+    },
+    {
+      "id": "TEST-010",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Rekonsiliasi migrasi, backup/restore dan rollback di staging",
+      "requirement_ids": [
+        "FR-002",
+        "FR-008",
+        "FR-009"
+      ]
+    },
+    {
+      "id": "TEST-011",
+      "type": "Planned validation; belum dieksekusi",
+      "intent": "Uji seluruh tugas inti empat role pada viewport 360/390/430/768/1280 px; sentuhan, keyboard layar, orientasi, navigasi, form, modal, diff, tabel, target sentuh, label/error, kosong, offline dan sesi habis; catat browser/perangkat serta bukti visual",
+      "requirement_ids": [
+        "FR-001",
+        "FR-002",
+        "FR-003",
+        "FR-004",
+        "FR-005",
+        "FR-006",
+        "FR-007",
+        "FR-008",
+        "FR-009",
+        "FR-010",
+        "FR-011",
+        "FR-012"
+      ]
+    }
+  ],
+  "release_criteria": [
+    "**Siap mulai implementasi terkait:** repository/inventaris tersedia; keputusan penghambat untuk modul itu diselesaikan; data uji dan staging tersedia; setiap tugas mengacu ID PRD. Tidak perlu menunda seluruh perencanaan jika hanya keputusan detail nonblokir yang tersisa.\n\n**Siap rilis:** seluruh FR MVP yang telah disahkan lulus; nol akses lintas cakupan pada suite penerimaan; alur persetujuan atomik dan historis benar; field laporan tidak hilang; migrasi direkonsiliasi; restore/rollback dibuktikan; pemilik operasi dan prosedur bantuan ditetapkan. Target NFR yang belum disepakati tidak boleh dilaporkan lulus.\n\n**Penghambat rilis:** kebocoran lintas role/scope, perubahan master tanpa validasi, data lama tertimpa/hilang, status persetujuan tidak konsisten, atau aturan laporan historis belum diputuskan. Rollback harus menghentikan penulisan yang berisiko dan menjaga pengajuan/laporan baru; strategi tepat ditentukan setelah inspeksi schema. Jangan memulihkan backup dengan menghapus transaksi baru tanpa rekonsiliasi.\n\n**Gerbang rilis mobile:** TEST-011 dan seluruh kriteria NFR-003 harus lulus untuk alur inti keempat role. Fungsi yang hanya dapat diselesaikan di desktop, kontrol terpotong/tak dapat disentuh, atau keyboard layar yang menghalangi penyelesaian tugas adalah penghambat rilis. Lampirkan hasil pengujian dan screenshot per role/perangkat; pengujian ini belum dilakukan pada aplikasi existing."
+  ],
+  "risks": [
+    {
+      "id": "RISK-001",
+      "description": "Menu sudah terpisah tetapi data server masih global",
+      "likelihood": "UNKNOWN",
+      "impact": "CRITICAL",
+      "mitigation": "Kebijakan scope bersama dan uji negatif; blokir rilis jika bocor",
+      "contingency": "Blokir rilis modul berisiko; pemulihan sesuai rencana PRD bagian 21.",
+      "related_requirement_ids": [
+        "FR-001",
+        "FR-002"
+      ],
+      "status": "OPEN; owner UNASSIGNED"
+    },
+    {
+      "id": "RISK-002",
+      "description": "Perubahan anggota/guru merusak sejarah",
+      "likelihood": "MEDIUM",
+      "impact": "HIGH",
+      "mitigation": "Tetapkan tanggal efektif/snapshot; rekonsiliasi dan rollback teruji",
+      "contingency": "Blokir rilis modul berisiko; pemulihan sesuai rencana PRD bagian 21.",
+      "related_requirement_ids": [
+        "FR-005",
+        "FR-009"
+      ],
+      "status": "OPEN; owner UNASSIGNED"
+    },
+    {
+      "id": "RISK-003",
+      "description": "Pengajuan tidak punya reviewer atau reviewer berganti",
+      "likelihood": "UNKNOWN",
+      "impact": "HIGH",
+      "mitigation": "Penugasan eksplisit, blokir kirim tanpa reviewer; proses reasign perlu keputusan",
+      "contingency": "Blokir rilis modul berisiko; pemulihan sesuai rencana PRD bagian 21.",
+      "related_requirement_ids": [
+        "FR-004",
+        "FR-006"
+      ],
+      "status": "OPEN; owner UNASSIGNED"
+    },
+    {
+      "id": "RISK-004",
+      "description": "Field/kode atau formula lama hilang saat redesain",
+      "likelihood": "MEDIUM",
+      "impact": "HIGH",
+      "mitigation": "Inventaris/regresi sebelum migrasi; hentikan migrasi bila hasil berbeda",
+      "contingency": "Blokir rilis modul berisiko; pemulihan sesuai rencana PRD bagian 21.",
+      "related_requirement_ids": [
+        "FR-008",
+        "FR-010"
+      ],
+      "status": "OPEN; owner UNASSIGNED"
+    },
+    {
+      "id": "RISK-005",
+      "description": "Persetujuan ganda atau overwrite versi",
+      "likelihood": "MEDIUM",
+      "impact": "HIGH",
+      "mitigation": "Transaksi, versi sumber, operasi idempoten; konflik harus direview ulang",
+      "contingency": "Blokir rilis modul berisiko; pemulihan sesuai rencana PRD bagian 21.",
+      "related_requirement_ids": [
+        "FR-005",
+        "FR-006",
+        "FR-012"
+      ],
+      "status": "OPEN; owner UNASSIGNED"
+    },
+    {
+      "id": "RISK-006",
+      "description": "Hak admin/multi-role terlalu luas",
+      "likelihood": "UNKNOWN",
+      "impact": "HIGH",
+      "mitigation": "Deny default; putuskan delegasi dan self-approval",
+      "contingency": "Blokir rilis modul berisiko; pemulihan sesuai rencana PRD bagian 21.",
+      "related_requirement_ids": [
+        "FR-002",
+        "FR-011"
+      ],
+      "status": "OPEN; owner UNASSIGNED"
+    },
+    {
+      "id": "RISK-007",
+      "description": "Data pribadi/kegiatan/SPP terbuka melalui ekspor/log",
+      "likelihood": "UNKNOWN",
+      "impact": "HIGH",
+      "mitigation": "Minimisasi, scope ekspor, review logging dan tata kelola; blokir keluaran yang bocor",
+      "contingency": "Blokir rilis modul berisiko; pemulihan sesuai rencana PRD bagian 21.",
+      "related_requirement_ids": [
+        "FR-002",
+        "FR-012"
+      ],
+      "status": "OPEN; owner UNASSIGNED"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "ASM-001",
+      "text": "“Perhalaqahan” mencakup seluruh data menu Kursus Saya",
+      "rationale": "“Perhalaqahan” mencakup seluruh data menu Kursus Saya",
+      "risk": "Dikonfirmasi pengguna: guru, anggota, materi, jadwal, tempat",
+      "validation_method": "Dikonfirmasi pengguna: guru, anggota, materi, jadwal, tempat",
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "status": "VALIDATED"
+    },
+    {
+      "id": "ASM-002",
+      "text": "Satu tahap validasi Asmen cukup untuk pengajuan perhalaqahan",
+      "rationale": "Satu tahap validasi Asmen cukup untuk pengajuan perhalaqahan",
+      "risk": "Bisa memerlukan lintas wilayah; konfirmasi OQ-001,005,007",
+      "validation_method": "Bisa memerlukan lintas wilayah; konfirmasi OQ-001,005,007",
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "status": "OPEN"
+    },
+    {
+      "id": "ASM-003",
+      "text": "Satu pengajuan terbuka per kelompok",
+      "rationale": "Satu pengajuan terbuka per kelompok",
+      "risk": "Membatasi konflik tetapi mungkin menghambat kerja; konfirmasi OQ-010",
+      "validation_method": "Membatasi konflik tetapi mungkin menghambat kerja; konfirmasi OQ-010",
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "status": "OPEN"
+    },
+    {
+      "id": "ASM-004",
+      "text": "Aktivasi berlaku sejak persetujuan dan tidak surut",
+      "rationale": "Aktivasi berlaku sejak persetujuan dan tidak surut",
+      "risk": "Belum menjawab pertengahan pekan; konfirmasi OQ-005,006,010",
+      "validation_method": "Belum menjawab pertengahan pekan; konfirmasi OQ-005,006,010",
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "status": "OPEN"
+    },
+    {
+      "id": "ASM-005",
+      "text": "Sistem existing disesuaikan tanpa mengganti stack",
+      "rationale": "Sistem existing disesuaikan tanpa mengganti stack",
+      "risk": "Stack belum diinspeksi; validasi repository/OQ-008",
+      "validation_method": "Stack belum diinspeksi; validasi repository/OQ-008",
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "status": "OPEN"
+    },
+    {
+      "id": "ASM-006",
+      "text": "Laporan mengikat konteks historis anggota/guru melalui snapshot atau versi",
+      "rationale": "Laporan mengikat konteks historis anggota/guru melalui snapshot atau versi",
+      "risk": "Cara existing belum diketahui; pilih setelah inspeksi/OQ-005,006",
+      "validation_method": "Cara existing belum diketahui; pilih setelah inspeksi/OQ-005,006",
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "status": "OPEN"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "OQ-001",
+      "question": "Bagaimana mahali, Asmen, guru, dan kelompok saling ditugaskan? Apakah banyak mahali?",
+      "impact": "Menghambat finalisasi kebijakan akses dan migrasi",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": []
+    },
+    {
+      "id": "OQ-002",
+      "question": "Apakah manager perlu detail individu/SPP dan admin perlu membaca isi laporan? Default usulan: rekap manager; admin administratif",
+      "impact": "Menghambat pemberian akses detail baru",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": [
+        "FR-010"
+      ]
+    },
+    {
+      "id": "OQ-003",
+      "question": "Apa beda Pekan 41 dan Pekan 2? Kapan pekan dibuka/ditutup; boleh terlambat/mundur?",
+      "impact": "Menghambat perubahan logika periode; jangan ubah definisi lama tanpa jawaban",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": [
+        "FR-009"
+      ]
+    },
+    {
+      "id": "OQ-004",
+      "question": "Siapa memvalidasi koreksi laporan terkirim dan bagaimana alur existing?",
+      "impact": "Menghambat perubahan alur koreksi; inventaris/preservasi tetap dapat dimulai",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": [
+        "FR-008"
+      ]
+    },
+    {
+      "id": "OQ-005",
+      "question": "Siapa mengajukan pergantian guru, ke mana persetujuan diarahkan, kapan efektif, siapa melihat sejarah?",
+      "impact": "Menghambat implementasi perpindahan pengampu/anggota",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": [
+        "FR-004",
+        "FR-011"
+      ]
+    },
+    {
+      "id": "OQ-006",
+      "question": "Apakah satu anggota boleh di beberapa kelompok? Apakah perubahan berlaku di tengah pekan?",
+      "impact": "Menghambat kontrak keanggotaan dan konteks laporan",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": [
+        "FR-011"
+      ]
+    },
+    {
+      "id": "OQ-007",
+      "question": "Apakah satu akun boleh beberapa role? Siapa reviewer pengganti jika Asmen menjadi pemohon/berhalangan?",
+      "impact": "Menghambat multi-role/delegasi; jangan membuat bypass",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": []
+    },
+    {
+      "id": "OQ-008",
+      "question": "Repository, stack, schema, staging, hosting, target rilis, dan penanggung jawab teknis?",
+      "impact": "Menghambat handoff implementasi yang spesifik",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": []
+    },
+    {
+      "id": "OQ-009",
+      "question": "Apakah ada anggota anak; siapa boleh mengakses apa, berapa lama data/audit disimpan, bagaimana penghapusan/backup?",
+      "impact": "Menghambat finalisasi tata kelola dan rilis",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": []
+    },
+    {
+      "id": "OQ-010",
+      "question": "Setuju satu pengajuan terbuka, tanpa penolakan permanen/penarikan, dan aktif langsung setelah disetujui?",
+      "impact": "Menghambat detail state dan konflik; rekomendasi awal belum final",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": []
+    },
+    {
+      "id": "OQ-011",
+      "question": "Apa target waktu tugas, performa, beban, pemulihan, dan daftar browser/perangkat?",
+      "impact": "Menghambat penetapan target NFR; bukan alasan menebak angka",
+      "blocking": true,
+      "owner": "Pemilik produk dan penanggung jawab teknis",
+      "related_requirement_ids": []
+    }
+  ],
+  "traceability": [
+    {
+      "requirement_id": "FR-001",
+      "goal_ids": [
+        "G-001",
+        "G-004"
+      ],
+      "journey_ids": [
+        "J-001"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-001",
+        "TEST-011"
+      ],
+      "status": "Draf"
+    },
+    {
+      "requirement_id": "FR-002",
+      "goal_ids": [
+        "G-001"
+      ],
+      "journey_ids": [
+        "J-001",
+        "J-006"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-001",
+        "TEST-002"
+      ],
+      "status": "Draf; OQ-001,002,007"
+    },
+    {
+      "requirement_id": "FR-003",
+      "goal_ids": [
+        "G-001",
+        "G-004"
+      ],
+      "journey_ids": [
+        "J-001",
+        "J-005"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-001",
+        "TEST-008"
+      ],
+      "status": "Draf"
+    },
+    {
+      "requirement_id": "FR-004",
+      "goal_ids": [
+        "G-002"
+      ],
+      "journey_ids": [
+        "J-002"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-003"
+      ],
+      "status": "Draf; reviewer/field perlu inventaris"
+    },
+    {
+      "requirement_id": "FR-005",
+      "goal_ids": [
+        "G-002"
+      ],
+      "journey_ids": [
+        "J-003"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-004",
+        "TEST-005"
+      ],
+      "status": "Draf; OQ-005,006,010"
+    },
+    {
+      "requirement_id": "FR-006",
+      "goal_ids": [
+        "G-002"
+      ],
+      "journey_ids": [
+        "J-002",
+        "J-003"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-003",
+        "TEST-004",
+        "TEST-005"
+      ],
+      "status": "Draf; OQ-007"
+    },
+    {
+      "requirement_id": "FR-007",
+      "goal_ids": [
+        "G-002"
+      ],
+      "journey_ids": [
+        "J-002",
+        "J-003"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-004"
+      ],
+      "status": "Draf; OQ-010"
+    },
+    {
+      "requirement_id": "FR-008",
+      "goal_ids": [
+        "G-003"
+      ],
+      "journey_ids": [
+        "J-004"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-006"
+      ],
+      "status": "Draf; OQ-004,008"
+    },
+    {
+      "requirement_id": "FR-009",
+      "goal_ids": [
+        "G-003"
+      ],
+      "journey_ids": [
+        "J-004"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-007",
+        "TEST-010"
+      ],
+      "status": "Draf; OQ-003,005,006"
+    },
+    {
+      "requirement_id": "FR-010",
+      "goal_ids": [
+        "G-001",
+        "G-003"
+      ],
+      "journey_ids": [
+        "J-005"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-002",
+        "TEST-008"
+      ],
+      "status": "Draf; OQ-002"
+    },
+    {
+      "requirement_id": "FR-011",
+      "goal_ids": [
+        "G-001"
+      ],
+      "journey_ids": [
+        "J-006"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-002",
+        "TEST-009"
+      ],
+      "status": "Draf; OQ-001,007"
+    },
+    {
+      "requirement_id": "FR-012",
+      "goal_ids": [
+        "G-001",
+        "G-002",
+        "G-003"
+      ],
+      "journey_ids": [
+        "J-002",
+        "J-003",
+        "J-004",
+        "J-006"
+      ],
+      "acceptance_criteria_present": true,
+      "test_ids": [
+        "TEST-005",
+        "TEST-009"
+      ],
+      "status": "Draf; OQ-009"
+    }
+  ],
+  "coding_agent_handoff": {
+    "source_prd_version": "0.1",
+    "status": "PROVISIONAL",
+    "repository": "Existing; lokasi dan kode UNSPECIFIED",
+    "confirmed_stack": null,
+    "source_file": "Handoff-Coding-Agent-v0.1.md",
+    "content_markdown": "# Coding-Agent Handoff — Awanputih v0.1\n\n**Status:** PROVISIONAL. **Sumber kebenaran:** PRD-Laporan-Pekanan-v0.1.md, versi 0.1, 15 Oktober 2026. **Target:** coding agent yang bekerja pada repository. **Repository:** aplikasi existing, lokasi/kode belum diberikan. **Stack terkonfirmasi:** UNSPECIFIED. Jangan menganggap dokumen ini izin menerapkan keputusan terbuka.\n\n## Misi dan batas\n\nPerbaiki sistem existing menjadi empat role dengan akses role + penugasan. Guru hanya mengurus kelompok sendiri dan mengajukan buat/ubah perhalaqahan; Asmen memvalidasi; manager memantau rekap mahali; admin mengelola akun/role/pengaturan. Pertahankan seluruh field laporan existing. Data aktif berubah setelah persetujuan; sejarah laporan tidak berubah surut.\n\nTidak ada aplikasi native, AI, integrasi pesan, pembayaran daring, formula KPI baru, atau penggantian stack. Jangan menambahkan kemampuan manager/admin melewati Asmen. Jika PRD dan handoff berbeda, ikuti PRD dan laporkan ketidaksesuaian.\n\n## Langkah pertama: inspeksi, bukan menebak\n\nPeriksa instruksi repository, framework, pengelola paket, autentikasi/session, middleware/policy, query scope, schema, periode, pembuatan laporan, formula, seed, migrasi, ekspor, tes, CI, deployment, backup dan staging. Laporkan file/command nyata dari hasil inspeksi; dokumen ini tidak menetapkan path atau command fiktif.\n\nInventaris seluruh field/kode/status/alur koreksi existing, termasuk field yang tidak terlihat di audit UI. Siapkan akun sintetis: empat role, minimal dua guru dan dua Asmen dengan cakupan berbeda, serta akun tanpa penugasan. Jangan memakai data pribadi produksi sebagai fixture.\n\n## Penghambat dan batas keputusan\n\nOQ-001/002/007 memengaruhi akses; OQ-003 periode; OQ-004 koreksi laporan; OQ-005/006 sejarah/perpindahan; OQ-008 repository; OQ-009 tata kelola; OQ-010 state; OQ-011 NFR. Selesaikan pertanyaan relevan sebelum mengimplementasikan modul yang bergantung padanya. Modul lain boleh direncanakan sambil menunggu. Jangan mengubah asumsi menjadi keputusan pengguna.\n\n## Arah arsitektur dan modul\n\nGunakan struktur existing sejauh kompatibel. Batas konseptual:\n\n| Modul | Tanggung jawab / input-output | FR |\n|---|---|---|\n| Akses | Identitas + role + penugasan → keputusan izin/query scope; berlaku sama untuk UI/API/search/agregat/ekspor | FR-001,002,011 |\n| Perhalaqahan aktif | Data kelompok tervalidasi dan versi/konteksnya; tidak menerima perubahan langsung dari form guru | FR-004,005,009 |\n| Pengajuan | Draf/payload/versi sumber → pengajuan dan riwayat; tidak menimpa master sebelum persetujuan | FR-004–007 |\n| Review | Pengajuan + reviewer sah + versi saat ini → satu keputusan atomik | FR-006,012 |\n| Pelaporan | Konteks kelompok/periode dan field existing → draf/submitted/detail | FR-008,009 |\n| Beranda/rekap | Query berizin + filter → tugas dan agregat sesuai cakupan | FR-003,010 |\n| Audit | Peristiwa bisnis/akses → riwayat terbatas dan log minimal | FR-007,012 |\n\nServer merupakan batas kepercayaan. Frontend tidak menentukan pemilik, reviewer, cakupan, atau status final. Hindari izin yang diulang dengan logika berbeda di setiap halaman. Rekomendasi transaksi, pengendalian versi, dan idempotensi tidak berarti kewajiban memilih library/database baru.\n\n## Urutan milestone\n\n| ID | Hasil / FR | Bukti selesai / tes | Tidak termasuk |\n|---|---|---|---|\n| M-001 | Inventaris baseline, organisasi/penugasan, keputusan terbuka dan rancangan akses / FR-002,008,009,011 | Peta field/status/route nyata; fixture; baseline rekap; pemilik produk mengesahkan aturan terkait | Migrasi produksi dan desain ulang schema tanpa bukti |\n| M-002 | Otorisasi dan beranda/menu empat role / FR-001–003,011 | TEST-001,002; akses lintas guru/Asmen ditolak server; akun tanpa penugasan tidak melihat global | Memberi admin hak operasional otomatis |\n| M-003 | Buat/ubah perhalaqahan dan review / FR-004–007,012 | TEST-003–005,009; data lama tetap aktif; persetujuan atomik/idempoten; alasan revisi/riwayat terbaca | Self-approval/delegasi/arsip yang belum diputuskan |\n| M-004 | Pelaporan dan sejarah/rekap terjaga / FR-008–010 | TEST-006–008; rekonsiliasi field, kode, nominal, periode dan formula | Menyederhanakan field/formula tanpa persetujuan |\n| M-005 | Migrasi, akses audit, UX gagal/responsif dan rilis / FR-001–012 | TEST-010,011 dan suite kritis; backup/restore/rollback; OQ rilis terselesaikan | Klaim lulus NFR tanpa target dan bukti |\n\nSelesaikan verifikasi tiap milestone sebelum lanjut ke dependennya. Laporkan keputusan yang diperlukan beserta dampak konkret; jangan bertanya kembali tentang empat role dan pemeliharaan field yang sudah disepakati.\n\n## Kontrak data\n\nIkuti DATA-001–008 di PRD. Adaptasikan relasi existing; jangan otomatis membuat ulang semuanya. Identitas role/cakupan datang dari server. Pengajuan menyimpan tipe create/update, pemohon, target, versi sumber, usulan, status, keputusan dan waktu. Master hanya memuat data yang berlaku. Laporan mengacu konteks historis yang disepakati, bukan join ke master terkini yang dapat mengubah sejarah.\n\nPutuskan aturan keunikan kode kelompok, laporan per periode, keanggotaan rangkap, tanggal efektif, multi-role, akses historis dan retensi sebelum menetapkan constraint terkait. Migrasi bersifat aditif dahulu jika feasible; validasi jumlah dan isi, jangan menghapus kolom lama sebelum pemetaan dibuktikan. Strategi pasti mengikuti schema existing.\n\n## Kontrak operasi konseptual\n\nNama berikut bukan URL endpoint yang telah ditemukan. Sesuaikan routing dan format existing setelah inspeksi.\n\n| Operasi | Aktor/input | Hasil / kegagalan / efek |\n|---|---|---|\n| ListOwnHalaqah / GetOwnReport | Guru, filter/identifier | Data sendiri; identifier di luar scope ditolak tanpa kebocoran |\n| SaveRequestDraft | Guru, target/versi sumber/payload yang diizinkan | Draf milik pemohon; error field tidak membuang input |\n| SubmitRequest | Guru, identifier draf dan versi | Pending jika lengkap dan reviewer tersedia; retry tidak menduplikasi |\n| ListReviewQueue / GetRequestDiff | Asmen, filter/identifier | Binaan saja; diff terbatas pada kebutuhan review |\n| ApproveRequest | Asmen, identifier/expected version/id operasi | Master + keputusan + audit konsisten; konflik/izin/status invalid menolak; retry memberi hasil operasi yang sama |\n| ReturnForRevision | Asmen, identifier/versi/alasan | Returned + alasan + riwayat; alasan wajib; penanganan race setara |\n| SaveReportDraft / SubmitReport | Guru, laporan/periode/field existing | Draf atau submitted; validasi existing; duplikasi dicegah sesuai kunci bisnis disahkan |\n| GetScopedSummary | Asmen/manager, filter | Agregat sesuai cakupan; data belum ada dibedakan dari nol |\n| UpdateAccessAssignment | Admin, objek akses/perubahan | Penugasan valid + audit; request berikutnya memakai akses terbaru |\n\nKategori error: unauthenticated, forbidden, validation, conflict/stale, reviewer unavailable, timeout, transient server failure. Mapping kode/status HTTP mengikuti konvensi existing. Timeout/rate limit numerik belum disepakati. Tidak ada side effect eksternal baru. Error tak pasti harus memungkinkan pemeriksaan status operasi sebelum retry.\n\n## Inventaris UI\n\nImplementasikan inventory role pada PRD bagian 11 serta semua state bagian 12. Guru mendapat Halaqah Saya, Anggota Saya, Laporan Saya, Pengajuan Saya; Asmen mendapat antrean validasi dan binaan; manager mendapat rekap; admin administrasi. Buat/ubah kelompok memakai draf; review memperlihatkan perbedaan dan alasan. Label status laporan dan pengajuan dibedakan. Aktifkan hak detail/ekspor hanya sesuai keputusan PRD.\n\nUji loading, kosong, filter kosong, validasi, error, sesi habis, denied, offline, stale, timeout, retry. Tidak menambah sinkronisasi offline atau autosave tanpa keputusan. Mobile friendly merupakan kebutuhan terkonfirmasi dan wajib memenuhi NFR-003; pertahankan keyboard dan label yang jelas.\n\n**Persyaratan wajib mobile:** ikuti NFR-003 dan bagian 11 PRD. Implementasikan semua alur inti empat role di ponsel. Gunakan layout ponsel terlebih dahulu, form satu kolom, menu ringkas, daftar/rekap responsif, target sentuh minimal 44 × 44 CSS px, input utama minimal 16 CSS px. Tidak ada fungsi yang hanya tersedia melalui hover atau desktop. Pastikan keyboard layar, orientasi, area aman perangkat, modal, dan tombol melekat tidak menutupi isi atau tindakan.\n\nTEST-011 mencakup viewport 360/390/430/768/1280 CSS px dan seluruh FR-001–012. Verifikasi tugas Guru, review Asmen, rekap Manager, serta administrasi Admin; sertakan Android dan iPhone/perangkat setara, dengan Chrome Android dan Safari iOS sebagai sasaran browser yang direkomendasikan. Catat versi dan bukti aktual; jangan mengaku menguji perangkat yang tidak tersedia. Kegagalan penyelesaian alur inti mobile memblokir milestone M-005 dan rilis. Tidak ada kewajiban membuat aplikasi native.\n\n## Keamanan dan pengujian\n\nTerapkan default deny, pemeriksaan objek/scope, validasi input, proteksi request dan pengelolaan secret yang sesuai stack existing. Jangan mengambil role/reviewer/status dari input bebas. Riwayat bisnis berisi diff secukupnya dan dibatasi; log umum tidak berisi payload pribadi. Jangan mengklaim aman/compliant hanya karena menu tersembunyi.\n\nTEST-001–011 di PRD adalah rencana wajib sesuai modul, bukan hasil yang sudah dijalankan. Prioritas: negative authorization, state transition, concurrency/partial failure, regression laporan, migrasi dan restore. Tambahkan pengujian yang membuktikan perilaku, bukan yang hanya menyalin implementasi. Target performa/retensi/ketersediaan menunggu keputusan.\n\n## Larangan asumsi dan definition of done\n\nJangan menebak: stack/schema/command; seluruh pelajar anak; akses admin global; manager boleh mengedit laporan; multi-role; guru boleh mengambil anggota kelompok lain; anggota hanya satu kelompok; formula KPI; penomoran pekan; reviewer koreksi laporan; tanggal efektif perpindahan; retensi dan legal compliance.\n\nSelesai berarti FR yang disahkan dipenuhi, suite terkait lulus, state gagal dan akses diuji, field/laporan lama utuh, migrasi/rollback terdokumentasi, pertanyaan penghambat tidak disembunyikan, serta tidak ada fitur di luar scope. Belum boleh menandai implementasi penuh selesai selama keputusan penghambatnya belum tersedia.\n\n## Format laporan penyelesaian\n\nLaporkan ringkasan hasil; file yang diubah; FR yang dipenuhi; tes dan hasil aktual; migrasi/konfigurasi; penyimpangan PRD; asumsi baru; keterbatasan; pekerjaan tersisa; risiko operasi/keamanan. Pisahkan “diimplementasikan”, “diuji”, dan “belum diverifikasi”.\n"
+  }
+}
