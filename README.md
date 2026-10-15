@@ -45,8 +45,8 @@ Mempertahankan seluruh field formulir laporan existing:
   - Kontrol Pekanan (*Tilawah Harian, Shalat Jama'ah, Qiyamul Lail, Shaum Sunnah, Catatan*)
   - Kontak Personal (*Ya/Tidak, Catatan Interaksi*)
   - Distribusi Buletin (*Cetak & Digital*)
-  - SPP Pekanan (*Nominal Rupiah*)
-- **Langkah 3: Ringkasan & Submit:** Perhitungan otomatis persentase kehadiran, rekapitulasi status, dan total SPP.
+  - SPP Bulanan (*Nominal Rupiah Iuran Bulanan*)
+- **Langkah 3: Ringkasan & Submit:** Perhitungan otomatis persentase kehadiran, rekapitulasi status, dan total SPP bulanan.
 - **Read-Only Submitted Report:** Laporan yang telah dikirim berstatus *Submitted* dan bersifat baca-saja untuk menjaga keutuhan riwayat pekanan.
 
 ### 4. Responsif Mobile First (NFR-003)

@@ -55,7 +55,7 @@ export default function RekapMahaliPage() {
             Rekapitulasi Capaian Mahali
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            Monitoring performa pelaporan, kehadiran, dan iuran SPP pekanan.
+            Monitoring performa pelaporan, kehadiran, dan iuran SPP bulanan.
           </p>
         </div>
 
@@ -102,9 +102,9 @@ export default function RekapMahaliPage() {
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-          <span className="text-xs font-semibold uppercase text-slate-500">Total SPP Terkumpul</span>
+          <span className="text-xs font-semibold uppercase text-slate-500">Total SPP Bulanan</span>
           <div className="text-xl sm:text-2xl font-black text-purple-700 mt-2">{formatRupiah(totalSpp)}</div>
-          <div className="text-xs text-slate-500 mt-1">Akumulasi laporan terkirim</div>
+          <div className="text-xs text-slate-500 mt-1">Akumulasi iuran bulanan</div>
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export default function RekapMahaliPage() {
                 <th className="p-3.5">Status Laporan</th>
                 <th className="p-3.5">Pelaksanaan</th>
                 <th className="p-3.5">Kehadiran</th>
-                <th className="p-3.5">SPP Pekanan</th>
+                <th className="p-3.5">SPP Bulanan</th>
                 <th className="p-3.5 text-right">Aksi</th>
               </tr>
             </thead>

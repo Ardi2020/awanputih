@@ -117,11 +117,11 @@ export default function LaporanDetailPage() {
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
-          <span className="text-xs text-slate-400 block mb-1">Total SPP Terkumpul</span>
+          <span className="text-xs text-slate-400 block mb-1">Total SPP Bulanan</span>
           <span className="text-xl font-black text-emerald-700">
             {formatRupiah(report.ringkasan.totalSpp)}
           </span>
-          <span className="text-[11px] text-slate-500 block mt-0.5">Iuran pekanan</span>
+          <span className="text-[11px] text-slate-500 block mt-0.5">Iuran bulanan</span>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
@@ -194,7 +194,7 @@ export default function LaporanDetailPage() {
                     {p.kehadiran}
                   </span>
                   <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                    SPP: {formatRupiah(p.sppNominal)}
+                    SPP Bulanan: {formatRupiah(p.sppNominal)}
                   </span>
                 </div>
               </div>

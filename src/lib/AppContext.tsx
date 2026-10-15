@@ -262,7 +262,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addAudit(
       "SUBMIT_REPORT",
       `${submittedReport.id} / ${halaqah.nama}`,
-      `Laporan pekanan berhasil dikirim (Kehadiran: ${persentase}%, SPP: Rp ${totalSpp})`,
+      `Laporan pekanan berhasil dikirim (Kehadiran: ${persentase}%, SPP Bulanan: Rp ${totalSpp})`,
       "SUCCESS"
     );
 
