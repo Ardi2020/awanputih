@@ -23,7 +23,7 @@ Dibuat sesuai dokumen spesifikasi:
 - **Manager:**
   - Beranda: *Ringkasan Eksekutif Mahali*.
   - Menu: *Rekap Mahali*, *Status Pelaporan*, *Ringkasan per Asmen*.
-  - Monitoring rekapitulasi capaian kepatuhan pelaporan, kehadiran rata-rata, dan total SPP tanpa hak operasional mengubah laporan.
+  - Monitoring rekapitulasi capaian kepatuhan pelaporan, kehadiran rata-rata, dan total iuran bulanan tanpa hak operasional mengubah laporan.
 - **Admin:**
   - Beranda: *Dashboard Administrasi*.
   - Menu: *Akun & Penugasan*, *Log Audit Sistem*.
@@ -45,8 +45,8 @@ Mempertahankan seluruh field formulir laporan existing:
   - Kontrol Pekanan (*Tilawah Harian, Shalat Jama'ah, Qiyamul Lail, Shaum Sunnah, Catatan*)
   - Kontak Personal (*Ya/Tidak, Catatan Interaksi*)
   - Distribusi Buletin (*Cetak & Digital*)
-  - SPP Bulanan (*Nominal Rupiah Iuran Bulanan*)
-- **Langkah 3: Ringkasan & Submit:** Perhitungan otomatis persentase kehadiran, rekapitulasi status, dan total SPP bulanan.
+  - Iuran Bulanan (*Nominal Rupiah Iuran Bulanan*)
+- **Langkah 3: Ringkasan & Submit:** Perhitungan otomatis persentase kehadiran, rekapitulasi status, dan total iuran bulanan.
 - **Read-Only Submitted Report:** Laporan yang telah dikirim berstatus *Submitted* dan bersifat baca-saja untuk menjaga keutuhan riwayat pekanan.
 
 ### 4. Responsif Mobile First (NFR-003)

@@ -430,7 +430,7 @@ function BuatLaporanContent() {
                 Langkah 2: Isian Anggota / Pemuda ({pemudaItems.length} orang)
               </h2>
               <p className="text-xs text-slate-500">
-                Preservasi field: Kehadiran, Kontrol Ibadah, Kontak, Buletin, dan SPP Bulanan.
+                Preservasi field: Kehadiran, Kontrol Ibadah, Kontak, Buletin, dan Iuran Bulanan.
               </p>
             </div>
             <button
@@ -576,9 +576,9 @@ function BuatLaporanContent() {
                     </div>
                   </div>
 
-                  {/* SPP Bulanan */}
+                  {/* Iuran Bulanan */}
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
-                    <span className="font-semibold text-slate-700 block">SPP Bulanan (Rp)</span>
+                    <span className="font-semibold text-slate-700 block">Iuran Bulanan (Rp)</span>
                     <span className="text-[10px] text-slate-400 block">Iuran bulan berjalan</span>
                     <input
                       type="number"
@@ -633,7 +633,7 @@ function BuatLaporanContent() {
               <span className="text-sm font-bold text-slate-700">{totalIzin} / {totalSakit} / {totalAlpa}</span>
             </div>
             <div className="p-2 bg-white rounded-xl border border-slate-100">
-              <span className="text-slate-400 block mb-0.5">Total SPP Bulanan</span>
+              <span className="text-slate-400 block mb-0.5">Total Iuran Bulanan</span>
               <span className="text-sm font-black text-emerald-700">{formatRupiah(totalSpp)}</span>
             </div>
           </div>

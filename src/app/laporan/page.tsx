@@ -173,7 +173,7 @@ export default function LaporanListPage() {
                   <div className="text-xs text-slate-500 mt-2 flex flex-wrap gap-x-4 gap-y-1">
                     {!isGuru && <span>Guru: <strong>{r.guruNama}</strong></span>}
                     <span>Kehadiran: <strong>{r.ringkasan.totalHadir} / {r.ringkasan.totalAnggota} ({r.ringkasan.persentaseKehadiran}%)</strong></span>
-                    <span>Total SPP Bulanan: <strong>{formatRupiah(r.ringkasan.totalSpp)}</strong></span>
+                    <span>Total Iuran Bulanan: <strong>{formatRupiah(r.ringkasan.totalSpp)}</strong></span>
                     <span>Pelaksanaan: <strong>{r.infoUmum.terlaksana ? "Terlaksana" : "Tidak Terlaksana"}</strong></span>
                   </div>
                 </div>

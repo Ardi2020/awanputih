@@ -419,7 +419,7 @@ export const initialAuditLogs: AuditLog[] = [
     actorRole: "Guru",
     action: "SUBMIT_REPORT",
     target: "lap-162 / Halaqah Al-Fatih",
-    details: "Mengirim laporan pekanan Pekan 41 (Kehadiran: 75%, SPP Bulanan: Rp 150.000)",
+    details: "Mengirim laporan pekanan Pekan 41 (Kehadiran: 75%, Iuran Bulanan: Rp 150.000)",
     outcome: "SUCCESS",
     timestamp: "2026-10-13T11:20:00Z",
   },

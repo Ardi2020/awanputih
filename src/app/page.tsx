@@ -294,13 +294,13 @@ export default function DashboardPage() {
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Total SPP Bulanan Binaan</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">Total Iuran Bulanan Binaan</span>
               <BarChart2 className="w-4 h-4 text-purple-600" />
             </div>
             <div className="text-xl sm:text-2xl font-black text-slate-900">
               {formatRupiah(submittedReports.reduce((acc, r) => acc + r.ringkasan.totalSpp, 0))}
             </div>
-            <div className="text-xs text-slate-500 mt-1">Iuran bulanan binaan</div>
+            <div className="text-xs text-slate-500 mt-1">Akumulasi iuran bulanan binaan</div>
           </div>
         </div>
 
@@ -410,7 +410,7 @@ export default function DashboardPage() {
             <div className="text-xs text-slate-500 mt-1">Target 100% tiap pekan</div>
           </div>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-xs font-semibold uppercase text-slate-500">Total SPP Bulanan Mahali</span>
+            <span className="text-xs font-semibold uppercase text-slate-500">Total Iuran Bulanan Mahali</span>
             <div className="text-xl sm:text-2xl font-black text-slate-900 mt-2">{formatRupiah(totalSpp)}</div>
             <div className="text-xs text-slate-500 mt-1">Akumulasi iuran bulanan</div>
           </div>
