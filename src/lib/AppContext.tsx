@@ -1045,9 +1045,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     targetHalaqahId?: string,
     catatanPemohon?: string
   ) => {
+    if (tipe === "CREATE") {
+      addAudit("CREATE_PROPOSAL", "Blocked", "Guru tidak boleh membuat halaqah baru", "DENIED");
+      return {
+        success: false,
+        message: "Pengajuan halaqah baru pada Guru telah dihapus. Perhalaqahan dibuat oleh Asmen dan Manajer.",
+      };
+    }
+
     if (currentUser.role !== "Guru") {
       addAudit("CREATE_PROPOSAL", "Unauthorized", "Bukan Guru", "DENIED");
-      return { success: false, message: "Akses ditolak: Hanya Guru yang dapat mengajukan perhalaqahan." };
+      return { success: false, message: "Akses ditolak: Hanya Guru yang dapat mengajukan update data halaqahnya." };
     }
 
     if (!payload.nama?.trim() || !payload.hari || !payload.jam || !payload.materi?.trim()) {

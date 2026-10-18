@@ -370,8 +370,17 @@ export default function Navbar() {
       label: "Pembinaan & Kursus",
       items: [
         { href: "/halaqah", label: "Daftar Kursus / Halaqah" },
+        ...(currentUser.role === "Asmen" || currentUser.role === "Manager" || currentUser.role === "Admin"
+          ? [{ href: "/halaqah/baru", label: "+ Buat Perhalaqahan Baru (Asmen/Manajer)" }]
+          : []),
         { href: "/anggota", label: "Data Pemuda & Ri'ayah" },
-        { href: "/pengajuan", label: "Pengajuan & Mutasi Halaqah" },
+        {
+          href: "/pengajuan",
+          label:
+            currentUser.role === "Guru"
+              ? "Riwayat Update Murid & Waktu"
+              : "Validasi Perubahan Murid & Waktu",
+        },
       ],
     },
     {

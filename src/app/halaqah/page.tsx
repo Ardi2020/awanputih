@@ -12,6 +12,7 @@ import {
   UserCheck,
   Search,
   Edit3,
+  Plus,
 } from "lucide-react";
 
 export default function HalaqahListPage() {
@@ -21,6 +22,10 @@ export default function HalaqahListPage() {
 
   const isGuru = currentUser.role === "Guru";
   const isAsmen = currentUser.role === "Asmen";
+  const canCreatePerhalaqahan =
+    currentUser.role === "Asmen" ||
+    currentUser.role === "Manager" ||
+    currentUser.role === "Admin";
 
   const filteredHalaqahs = scopedHalaqahs.filter((h) => {
     const jenis = h.jenis || "Karyawan";
@@ -44,16 +49,35 @@ export default function HalaqahListPage() {
             Manajemen Kursus & Multi-Halaqah (Maks. 5 Murid / Kelompok)
           </span>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-            {isGuru ? "Halaqah Saya" : isAsmen ? "Kelompok Binaan" : "Daftar Kelompok Halaqah"}
+            {isGuru ? "Halaqah Saya" : isAsmen ? "Kelompok Binaan (Perhalaqahan)" : "Daftar Kelompok Halaqah"}
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             {isGuru
-              ? `Anda mengampu ${scopedHalaqahs.length} kelompok halaqah aktif. Anda dapat memperbarui nama murid (maks. 5 orang) dan waktu pertemuan untuk diajukan ke AJM.`
+              ? `Anda mengampu ${scopedHalaqahs.length} kelompok halaqah aktif. Pembuatan perhalaqahan baru dilakukan oleh Asmen & Manajer.`
               : isAsmen
-              ? "Kelompok perhalaqahan yang berada dalam pengawasan binaan Anda beserta status kesehatannya."
-              : "Seluruh data kelompok sesuai lingkup kewenangan Anda."}
+              ? "Kelola dan buat kelompok perhalaqahan di wilayah binaan Anda (maks. 5 murid per halaqah)."
+              : "Kelola dan buat kelompok perhalaqahan sesuai lingkup kewenangan Anda."}
           </p>
         </div>
+
+        {/* Pembuatan Perhalaqahan HANYA untuk Asmen, Manajer, dan Admin (Dihapus dari Guru) */}
+        {canCreatePerhalaqahan && (
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <Link
+              href="/halaqah/baru"
+              className="touch-target px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Buat Perhalaqahan Baru</span>
+            </Link>
+            <Link
+              href="/admin?tab=halaqah"
+              className="touch-target px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition"
+            >
+              <span>CRUD Perhalaqahan</span>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Smart Filter [ Semua ] [ Karyawan ] [ Pelajar ] & Search */}
