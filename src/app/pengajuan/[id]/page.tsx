@@ -27,6 +27,7 @@ export default function PengajuanDetailPage() {
     currentUser,
     allPengajuans,
     allHalaqahs,
+    allPemudas,
     approvePengajuan,
     returnPengajuan,
   } = useApp();
@@ -235,17 +236,24 @@ export default function PengajuanDetailPage() {
                   <span className="font-semibold">{targetHalaqah.materi}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">Anggota Aktif ({targetHalaqah.anggotaIds.length}):</span>
-                  <ul className="list-disc list-inside mt-1 space-y-0.5 text-slate-600">
-                    {targetHalaqah.anggotaIds.map((id, idx) => (
-                      <li key={idx}>{id}</li>
-                    ))}
+                  <span className="text-slate-400 block">
+                    Murid Aktif ({targetHalaqah.anggotaIds.length}/5 Maks):
+                  </span>
+                  <ul className="list-disc list-inside mt-1 space-y-1 text-slate-700 font-medium">
+                    {targetHalaqah.anggotaIds.map((mId, idx) => {
+                      const pm = allPemudas.find((p) => p.id === mId);
+                      return (
+                        <li key={idx}>
+                          {pm ? `${pm.nama} (${pm.telepon})` : mId}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               </div>
             ) : (
               <div className="text-xs text-slate-400 italic py-6">
-                Tidak ada data aktif sebelumnya (Kelompok baru diusulkan).
+                Tidak ada data aktif sebelumnya.
               </div>
             )}
           </div>
@@ -253,7 +261,7 @@ export default function PengajuanDetailPage() {
           {/* Right Column: Usulan Baru */}
           <div className="p-5 space-y-4 bg-emerald-50/20">
             <div className="inline-block px-2.5 py-1 rounded bg-emerald-600 text-white text-xs font-bold">
-              Usulan Perubahan Baru (Akan Diaktifkan)
+              Usulan Perubahan Baru (Akan Diaktifkan oleh AJM)
             </div>
 
             <div className="space-y-3 text-xs text-slate-800">
@@ -263,7 +271,9 @@ export default function PengajuanDetailPage() {
               </div>
               <div>
                 <span className="text-slate-400 block">Jadwal:</span>
-                <span className="font-bold text-emerald-950">{pengajuan.payload.hari}, {pengajuan.payload.jam}</span>
+                <span className="font-bold text-emerald-950">
+                  {pengajuan.payload.hari}, {pengajuan.payload.jam}
+                </span>
               </div>
               <div>
                 <span className="text-slate-400 block">Tempat:</span>
@@ -276,31 +286,51 @@ export default function PengajuanDetailPage() {
 
               <div>
                 <span className="text-slate-400 block mb-1">
-                  Daftar Anggota Usulan ({pengajuan.payload.anggota.length}):
+                  Daftar Murid Usulan (
+                  {pengajuan.payload.anggota.filter((m) => m.action !== "REMOVE").length}/5 Maks):
                 </span>
                 <div className="space-y-1">
-                  {pengajuan.payload.anggota.map((m, idx) => (
-                    <div
-                      key={idx}
-                      className={`px-2 py-1 rounded text-xs flex items-center justify-between ${
-                        m.action === "ADD"
-                          ? "bg-emerald-100 text-emerald-900 font-semibold"
-                          : m.action === "REMOVE"
-                          ? "bg-red-100 text-red-900 line-through opacity-70"
-                          : "bg-white border border-slate-200 text-slate-700"
-                      }`}
-                    >
-                      <span>
-                        {m.nama} <span className="text-slate-400 font-normal">({m.telepon})</span>
-                      </span>
-                      {m.action === "ADD" && (
-                        <span className="text-[10px] font-bold text-emerald-700">+ Baru</span>
-                      )}
-                      {m.action === "REMOVE" && (
-                        <span className="text-[10px] font-bold text-red-700 no-underline">- Hapus</span>
-                      )}
-                    </div>
-                  ))}
+                  {pengajuan.payload.anggota.map((m, idx) => {
+                    const orig = m.id ? allPemudas.find((p) => p.id === m.id) : undefined;
+                    const isRenamed =
+                      m.action === "KEEP" &&
+                      orig &&
+                      (orig.nama !== m.nama || orig.telepon !== m.telepon);
+                    return (
+                      <div
+                        key={idx}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between ${
+                          m.action === "ADD"
+                            ? "bg-emerald-100 text-emerald-900 font-semibold"
+                            : m.action === "REMOVE"
+                            ? "bg-red-100 text-red-900 line-through opacity-70"
+                            : isRenamed
+                            ? "bg-blue-100 text-blue-900 font-semibold border border-blue-200"
+                            : "bg-white border border-slate-200 text-slate-700"
+                        }`}
+                      >
+                        <span>
+                          {m.nama} <span className="text-slate-400 font-normal">({m.telepon})</span>
+                          {isRenamed && orig && (
+                            <span className="block text-[10px] text-blue-700 font-normal">
+                              Sebelumnya: {orig.nama} ({orig.telepon})
+                            </span>
+                          )}
+                        </span>
+                        {m.action === "ADD" && (
+                          <span className="text-[10px] font-bold text-emerald-700">+ Baru</span>
+                        )}
+                        {isRenamed && (
+                          <span className="text-[10px] font-bold text-blue-700">Nama/WA Diubah</span>
+                        )}
+                        {m.action === "REMOVE" && (
+                          <span className="text-[10px] font-bold text-red-700 no-underline">
+                            - Hapus
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

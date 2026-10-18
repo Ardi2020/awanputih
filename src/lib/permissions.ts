@@ -1,4 +1,13 @@
-import { User, Halaqah, LaporanPekanan, PengajuanHalaqah } from "./types";
+import {
+  User,
+  Halaqah,
+  LaporanPekanan,
+  PengajuanHalaqah,
+  ActionPlan,
+  PrioritasMasalah,
+  IltizamatRecord,
+  Pemuda,
+} from "./types";
 
 /**
  * Evaluates whether a user is allowed to access a specific halaqah
@@ -11,10 +20,10 @@ export function canAccessHalaqah(user: User, halaqah: Halaqah): boolean {
     case "Asmen":
       return halaqah.asmenId === user.id || user.supervisedHalaqahIds.includes(halaqah.id);
     case "Manager":
-      return halaqah.mahaliId === user.mahaliId;
+    case "PJ Mal":
+      return !user.mahaliId || halaqah.mahaliId === user.mahaliId;
     case "Admin":
-      // FR-002: Admin does not automatically have operational access
-      return false;
+      return true;
     default:
       return false;
   }
@@ -35,9 +44,10 @@ export function filterHalaqahsByScope(user: User, halaqahs: Halaqah[]): Halaqah[
         (h) => h.asmenId === user.id || user.supervisedHalaqahIds.includes(h.id)
       );
     case "Manager":
-      return halaqahs.filter((h) => h.mahaliId === user.mahaliId);
+    case "PJ Mal":
+      return halaqahs.filter((h) => !user.mahaliId || h.mahaliId === user.mahaliId);
     case "Admin":
-      return []; // Admin only administrates accounts/assignments, not operational halaqah master
+      return halaqahs;
     default:
       return [];
   }
@@ -54,9 +64,10 @@ export function filterReportsByScope(user: User, reports: LaporanPekanan[]): Lap
     case "Asmen":
       return reports.filter((r) => r.asmenId === user.id);
     case "Manager":
-      return reports.filter((r) => r.mahaliId === user.mahaliId);
+    case "PJ Mal":
+      return reports.filter((r) => !user.mahaliId || r.mahaliId === user.mahaliId);
     case "Admin":
-      return []; // Denied operational reports by default
+      return reports;
     default:
       return [];
   }
@@ -73,9 +84,80 @@ export function filterPengajuanByScope(user: User, items: PengajuanHalaqah[]): P
     case "Asmen":
       return items.filter((p) => p.asmenId === user.id);
     case "Manager":
-      return []; // Not in manager scope
+      return items;
     case "Admin":
-      return items; // Admin can view technical audit of proposals
+      return items;
+    default:
+      return [];
+  }
+}
+
+/**
+ * Filter Action Plans / Tugas by user role & scope
+ */
+export function filterActionPlansByScope(user: User, plans: ActionPlan[]): ActionPlan[] {
+  if (!user) return [];
+  switch (user.role) {
+    case "Guru":
+      return plans.filter((p) => p.picId === user.id);
+    case "Asmen":
+      return plans.filter((p) => p.picId === user.id || p.pemberiId === user.id || p.asmenId === user.id);
+    case "Manager":
+    case "Admin":
+      return plans;
+    default:
+      return [];
+  }
+}
+
+/**
+ * Filter Priority Problems by user role & scope
+ */
+export function filterPrioritasByScope(user: User, items: PrioritasMasalah[]): PrioritasMasalah[] {
+  if (!user) return [];
+  switch (user.role) {
+    case "Guru":
+      return items.filter((p) => p.guruId === user.id);
+    case "Asmen":
+      return items.filter((p) => p.asmenId === user.id);
+    case "Manager":
+    case "Admin":
+      return items;
+    default:
+      return [];
+  }
+}
+
+/**
+ * Filter Pemuda by user role & scope (Guru cannot see youth outside their groups)
+ */
+export function filterPemudasByScope(
+  user: User,
+  pemudas: Pemuda[],
+  scopedHalaqahs: Halaqah[]
+): Pemuda[] {
+  if (!user) return [];
+  if (user.role === "Admin" || user.role === "Manager" || user.role === "PJ Mal") {
+    return pemudas;
+  }
+  const allowedIds = scopedHalaqahs.map((h) => h.id);
+  return pemudas.filter((p) => allowedIds.includes(p.halaqahId));
+}
+
+/**
+ * Filter Iltizamat records by role
+ */
+export function filterIltizamatByScope(user: User, items: IltizamatRecord[]): IltizamatRecord[] {
+  if (!user) return [];
+  switch (user.role) {
+    case "Guru":
+      return items.filter((i) => i.guruId === user.id);
+    case "Asmen":
+      return items.filter((i) => i.asmenId === user.id);
+    case "PJ Mal":
+    case "Manager":
+    case "Admin":
+      return items;
     default:
       return [];
   }
@@ -97,9 +179,7 @@ export function canSubmitReport(user: User, halaqahId: string, halaqahs: Halaqah
  */
 export function canReviewPengajuan(user: User, pengajuan: PengajuanHalaqah): boolean {
   if (!user || user.role !== "Asmen") return false;
-  // Proposer cannot self-approve
   if (pengajuan.pemohonId === user.id) return false;
-  // Must be assigned reviewer
   return pengajuan.asmenId === user.id;
 }
 

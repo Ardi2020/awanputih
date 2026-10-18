@@ -62,26 +62,20 @@ export default function PengajuanListPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            {isGuru ? "Pengajuan Saya" : isAsmen ? "Validasi Perhalaqahan" : "Daftar Pengajuan Perhalaqahan"}
+            {isGuru
+              ? "Pengajuan Perubahan Halaqah ke AJM"
+              : isAsmen
+              ? "Validasi Perubahan Halaqah (AJM)"
+              : "Daftar Pengajuan Perhalaqahan"}
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {isGuru
-              ? "Riwayat dan status pengajuan pembuatan atau perubahan kelompok halaqah Anda."
+              ? "Riwayat dan status pengajuan perubahan data halaqah (nama murid maks. 5 & waktu pertemuan) kepada AJM."
               : isAsmen
-              ? "Antrean dan riwayat validasi usulan kelompok binaan di wilayah Anda."
-              : "Audit riwayat pengajuan perhalaqahan sistem."}
+              ? "Antrean dan riwayat validasi usulan perubahan kelompok binaan di wilayah Anda."
+              : "Audit riwayat pengajuan perubahan perhalaqahan sistem."}
           </p>
         </div>
-
-        {isGuru && (
-          <Link
-            href="/halaqah/baru"
-            className="touch-target px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition self-start sm:self-auto"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Ajukan Halaqah Baru</span>
-          </Link>
-        )}
       </div>
 
       {/* Filter Tabs */}

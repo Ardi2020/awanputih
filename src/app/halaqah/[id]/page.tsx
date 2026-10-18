@@ -69,7 +69,7 @@ export default function HalaqahDetailPage() {
             className="touch-target px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition self-start sm:self-auto"
           >
             <Edit3 className="w-4 h-4" />
-            <span>Ajukan Perubahan Data Kelompok</span>
+            <span>Update Nama Murid & Waktu (Ajukan ke AJM)</span>
           </Link>
         )}
       </div>
@@ -79,7 +79,7 @@ export default function HalaqahDetailPage() {
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl flex items-start gap-3 text-blue-900 text-xs">
           <Clock className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold">Pengajuan Perubahan Sedang Diproses:</span> Ada usulan pembaruan untuk kelompok ini yang berstatus <strong>Menunggu Validasi</strong> oleh Asisten Manager.
+            <span className="font-bold">Pengajuan Perubahan Sedang Diproses:</span> Ada usulan pembaruan waktu/murid untuk kelompok ini yang berstatus <strong>Menunggu Validasi</strong> oleh AJM (Asmen).
             Data aktif di bawah ini tetap berlaku sampai usulan disetujui secara resmi.
           </div>
         </div>
@@ -132,9 +132,9 @@ export default function HalaqahDetailPage() {
               </span>
             </div>
             <div>
-              <span className="text-slate-400 block mb-0.5">Jumlah Anggota Aktif</span>
+              <span className="text-slate-400 block mb-0.5">Jumlah Murid Aktif (Maks. 5)</span>
               <span className="font-semibold text-slate-900 text-sm">
-                {anggotaList.length} Pemuda Terdaftar
+                {anggotaList.length} / 5 Murid Terdaftar
               </span>
             </div>
             <div>
@@ -153,12 +153,17 @@ export default function HalaqahDetailPage() {
 
       {/* Member List (Mobile-friendly cards, NFR-003) */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
-          <UserCheck className="w-4 h-4 text-emerald-600" />
-          <span>Daftar Anggota / Pemuda Halaqah</span>
-        </h2>
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <UserCheck className="w-4 h-4 text-emerald-600" />
+            <span>Daftar Murid / Anggota Halaqah</span>
+          </h2>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+            {anggotaList.length}/5 Maks
+          </span>
+        </div>
         <p className="text-xs text-slate-500 mb-4">
-          Anggota resmi yang tercatat dalam versi aktif kelompok ini.
+          Maksimum 5 murid per halaqah. Guru dapat mengajukan perubahan nama murid dan waktu pertemuan ke AJM.
         </p>
 
         {anggotaList.length === 0 ? (
