@@ -236,7 +236,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const savedAuth = localStorage.getItem("awanputih_is_authenticated");
-      const savedUser = localStorage.getItem("awanputih_current_user");
+      const savedUser = localStorage.getItem("awanputih_current_user_v2");
       const savedBrowserEmail = localStorage.getItem("awanputih_browser_email");
       if (savedBrowserEmail) {
         setDetectedBrowserEmail(savedBrowserEmail);
@@ -245,7 +245,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(savedUser);
         const found = allUsers.find((u) => u.id === parsed.id || u.email === parsed.email);
         if (found) setCurrentUserState(found);
-        else setCurrentUserState(parsed);
       }
       if (savedAuth === "true") {
         setIsAuthenticated(true);
@@ -259,7 +258,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setCurrentUserState(user);
     setIsAuthenticated(true);
     try {
-      localStorage.setItem("awanputih_current_user", JSON.stringify(user));
+      localStorage.setItem("awanputih_current_user_v2", JSON.stringify(user));
       localStorage.setItem("awanputih_is_authenticated", "true");
     } catch {
       // ignore
@@ -347,9 +346,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       telepon: "081200000000",
       role: "Guru",
       mahaliId: "mahali-barat",
-      wilayahNama: "Koto Tangah",
-      asmenId: "usr-asmen-1",
-      assignedHalaqahIds: ["hq-01"],
+      wilayahNama: "KT2 (DAVID) • Koto Tangah 2",
+      asmenId: "usr-asmen-kt2",
+      assignedHalaqahIds: ["hq-kt2-01"],
       supervisedHalaqahIds: [],
       avatar: cleanEmail.substring(0, 2).toUpperCase(),
       skorKesehatan: 85,
@@ -1071,7 +1070,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     let targetHalaqah: Halaqah | undefined;
-    let asmenId = currentUser.asmenId || "usr-asmen-1";
+    let asmenId = currentUser.asmenId || "usr-asmen-kt2";
 
     if (tipe === "UPDATE") {
       if (!targetHalaqahId) {
@@ -1520,7 +1519,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const resolvedAsmenId =
       currentUser.role === "Asmen"
         ? currentUser.id
-        : data.asmenId || guru?.asmenId || "usr-asmen-1";
+        : data.asmenId || guru?.asmenId || "usr-asmen-kt2";
     const newHq: Halaqah = {
       id: generateId("hq"),
       kode: data.kode.trim().toUpperCase(),

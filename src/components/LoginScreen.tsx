@@ -159,8 +159,9 @@ export default function LoginScreen() {
                 <span className="text-slate-400">Contoh cepat:</span>
                 {[
                   "asmuliardi@gmail.com",
-                  "ahmad.fauzi@awanputih.click",
-                  "fauzan@awanputih.click",
+                  "surya@awanputih.click",
+                  "david@awanputih.click",
+                  "nandes@awanputih.click",
                 ].map((sampleEmail) => (
                   <button
                     key={sampleEmail}

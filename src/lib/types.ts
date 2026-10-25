@@ -55,11 +55,49 @@ export interface Mahali {
   targetKehadiran?: number;
 }
 
-export type JenjangPemuda = "HU" | "CP" | "Pelajar" | "Karyawan";
+export type JenjangPemuda = "HU" | "Pra HU" | "CP" | "KEC" | "Pelajar" | "Daris" | "Karyawan";
+
+export type UnitWilayah = "KT1" | "KT2" | "PU1" | "PU2";
+
+export interface KaryawanMaster {
+  id: string;
+  noUrutWilayah: number;
+  nama: string;
+  kodeDomisili: "KT" | "PU";
+  unitWilayah: UnitWilayah;
+  asmenNama: string;
+  isGuru: boolean;
+  jumlahHalaqahDiampu: number;
+  halaqahDiikutiNama?: string;
+  kitabDiikuti?: string;
+  guruPembinaNama?: string;
+  catatanKaderisasi?: string;
+}
+
+export interface KelompokKaderisasi {
+  id: string;
+  unitWilayah: UnitWilayah;
+  asmenId: string;
+  asmenNama: string;
+  kategori: "HU" | "Pra HU" | "CP" | "Peserta KEC" | "Alumni TITR 4";
+  judul: string;
+  pengampuNama: string;
+  perantaraNama?: string;
+  musyrifBackup?: string;
+  anggotaNamaList: string[];
+}
 
 export interface Pemuda {
   id: string;
   nama: string;
+  kodeDomisili?: "KT" | "PU";
+  domisili?: "KT" | "PU";
+  unitWilayah?: UnitWilayah;
+  wilayah?: UnitWilayah;
+  kitabMateri?: string;
+  noUrutKaryawan?: number;
+  noUrutDaris?: number;
+  catatanKaderisasi?: string;
   telepon: string;
   status: "Aktif" | "Nonaktif";
   jenjang?: JenjangPemuda;
@@ -76,6 +114,8 @@ export interface Halaqah {
   id: string;
   kode: string;
   nama: string;
+  unitWilayah?: UnitWilayah;
+  wilayah?: UnitWilayah;
   jenis?: "Karyawan" | "Pelajar";
   guruId: string;
   guruNama: string;

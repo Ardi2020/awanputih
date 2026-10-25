@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useApp } from "@/lib/AppContext";
+import { UnitWilayah } from "@/lib/types";
 import {
   Users,
   ArrowRight,
@@ -18,6 +19,7 @@ import {
 export default function HalaqahListPage() {
   const { currentUser, scopedHalaqahs, allPemudas } = useApp();
   const [filterJenis, setFilterJenis] = useState<"ALL" | "Karyawan" | "Pelajar">("ALL");
+  const [filterWilayah, setFilterWilayah] = useState<"ALL" | UnitWilayah>("ALL");
   const [search, setSearch] = useState("");
 
   const isGuru = currentUser.role === "Guru";
@@ -30,10 +32,12 @@ export default function HalaqahListPage() {
   const filteredHalaqahs = scopedHalaqahs.filter((h) => {
     const jenis = h.jenis || "Karyawan";
     if (filterJenis !== "ALL" && jenis !== filterJenis) return false;
+    if (filterWilayah !== "ALL" && h.wilayah !== filterWilayah) return false;
     if (
       search &&
       !h.nama.toLowerCase().includes(search.toLowerCase()) &&
       !h.guruNama.toLowerCase().includes(search.toLowerCase()) &&
+      !h.materi.toLowerCase().includes(search.toLowerCase()) &&
       !h.kode.toLowerCase().includes(search.toLowerCase())
     ) {
       return false;
@@ -42,21 +46,21 @@ export default function HalaqahListPage() {
   });
 
   return (
-    <div className="space-y-5 pb-10">
+    <div className="space-y-4 pb-10">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider">
-            Manajemen Kursus & Multi-Halaqah (Maks. 5 Murid / Kelompok)
+            Manajemen Perhalaqahan (KT1 Deri • KT2 David • PU1 Nandes • PU2 Abdi)
           </span>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-            {isGuru ? "Halaqah Saya" : isAsmen ? "Kelompok Binaan (Perhalaqahan)" : "Daftar Kelompok Halaqah"}
+            {isGuru ? "Halaqah Saya" : isAsmen ? "Kelompok Binaan (Perhalaqahan)" : "Daftar 30 Kelompok Halaqah"}
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             {isGuru
               ? `Anda mengampu ${scopedHalaqahs.length} kelompok halaqah aktif. Pembuatan perhalaqahan baru dilakukan oleh Asmen & Manajer.`
               : isAsmen
-              ? "Kelola dan buat kelompok perhalaqahan di wilayah binaan Anda (maks. 5 murid per halaqah)."
-              : "Kelola dan buat kelompok perhalaqahan sesuai lingkup kewenangan Anda."}
+              ? `Kelola ${scopedHalaqahs.length} kelompok perhalaqahan di wilayah binaan Anda (maks. 5 murid per halaqah).`
+              : `Total ${scopedHalaqahs.length} kelompok halaqah aktif (Karyawan & Daris/Pelajar) di seluruh wilayah.`}
           </p>
         </div>
 
@@ -80,14 +84,46 @@ export default function HalaqahListPage() {
         )}
       </div>
 
-      {/* Smart Filter [ Semua ] [ Karyawan ] [ Pelajar ] & Search */}
+      {/* Wilayah Filter Pills (KT1, KT2, PU1, PU2) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+        {(["ALL", "KT1", "KT2", "PU1", "PU2"] as const).map((wil) => {
+          const count =
+            wil === "ALL"
+              ? scopedHalaqahs.length
+              : scopedHalaqahs.filter((h) => h.wilayah === wil).length;
+          if (wil !== "ALL" && count === 0) return null;
+          const labels = {
+            ALL: "Semua Wilayah",
+            KT1: "KT1 (Deri)",
+            KT2: "KT2 (David)",
+            PU1: "PU1 (Nandes)",
+            PU2: "PU2 (Abdi)",
+          };
+          return (
+            <button
+              key={wil}
+              onClick={() => setFilterWilayah(wil)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition ${
+                filterWilayah === wil
+                  ? "bg-emerald-900 text-white shadow-sm"
+                  : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              {labels[wil]} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Smart Filter [ Semua ] [ Karyawan ] [ Pelajar / Daris ] & Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
           {(["ALL", "Karyawan", "Pelajar"] as const).map((tab) => {
-            const count =
-              tab === "ALL"
-                ? scopedHalaqahs.length
-                : scopedHalaqahs.filter((h) => (h.jenis || "Karyawan") === tab).length;
+            const count = scopedHalaqahs.filter(
+              (h) =>
+                (filterWilayah === "ALL" || h.wilayah === filterWilayah) &&
+                (tab === "ALL" || (h.jenis || "Karyawan") === tab)
+            ).length;
             return (
               <button
                 key={tab}
@@ -98,7 +134,12 @@ export default function HalaqahListPage() {
                     : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                 }`}
               >
-                {tab === "ALL" ? "Semua Segmen" : `Halaqah ${tab}`} ({count})
+                {tab === "ALL"
+                  ? "Semua Segmen"
+                  : tab === "Karyawan"
+                  ? "Halaqah Karyawan"
+                  : "Halaqah Daris / Pelajar"}{" "}
+                ({count})
               </button>
             );
           })}
@@ -110,7 +151,7 @@ export default function HalaqahListPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari nama halaqah / guru..."
+            placeholder="Cari kitab, guru, kode..."
             className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
@@ -139,17 +180,22 @@ export default function HalaqahListPage() {
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
                     <div className="flex items-center gap-1.5">
+                      {h.wilayah && (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-900 text-white">
+                          {h.wilayah}
+                        </span>
+                      )}
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
                         {h.kode}
                       </span>
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
                           jenis === "Karyawan"
-                            ? "bg-blue-50 text-blue-700"
-                            : "bg-purple-50 text-purple-700"
+                            ? "bg-amber-200 text-amber-950"
+                            : "bg-sky-100 text-sky-900"
                         }`}
                       >
-                        {jenis}
+                        {jenis === "Karyawan" ? "Karyawan" : "Daris / Pelajar"}
                       </span>
                     </div>
 
@@ -170,6 +216,10 @@ export default function HalaqahListPage() {
 
                   <div className="space-y-2 text-xs text-slate-600 mb-4">
                     <div className="flex items-center gap-2">
+                      <BookOpen className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                      <span className="font-black text-emerald-950">Kitab: {h.materi}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="font-semibold text-slate-800">
                         {h.hari}, {h.jam}
@@ -179,22 +229,22 @@ export default function HalaqahListPage() {
                       <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{h.tempat}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{h.materi}</span>
-                    </div>
                     <div className="pt-1">
                       <div className="flex items-center justify-between text-xs mb-1">
                         <span className="flex items-center gap-1.5 font-bold text-slate-800">
                           <Users className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span>Murid Halaqah ({muridList.length}/5 Maks)</span>
+                          <span>Anggota Halaqah ({muridList.length}/5 Maks)</span>
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {muridList.map((m) => (
                           <span
                             key={m.id}
-                            className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium"
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                              jenis === "Karyawan"
+                                ? "bg-amber-100 text-amber-950 border border-amber-200"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
                           >
                             {m.nama}
                           </span>
@@ -204,7 +254,7 @@ export default function HalaqahListPage() {
                     {!isGuru && (
                       <div className="flex items-center gap-2 text-slate-600 pt-1.5 border-t border-slate-100">
                         <span>
-                          Guru Utama: <strong>{h.guruNama}</strong>
+                          Guru / Musyrif: <strong className="text-slate-900">{h.guruNama}</strong>
                         </span>
                       </div>
                     )}
