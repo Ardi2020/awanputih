@@ -876,15 +876,15 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
             <Link href="/iltizamat?tab=pembayaran" className="p-3.5 rounded-xl bg-amber-50 border border-amber-200">
               <div className="font-bold text-amber-950">🟡 1 Transaksi Tunai Menunggu Verifikasi</div>
-              <p className="text-amber-800 mt-1">Pembayaran sebagian Rizki Pratama (Rp 100.000) via Guru</p>
+              <p className="text-amber-800 mt-1">Pembayaran sebagian Sulis (KT) Rp 100.000 via Guru Erik</p>
             </Link>
             <Link href="/iltizamat" className="p-3.5 rounded-xl bg-blue-50 border border-blue-200">
               <div className="font-bold text-blue-950">🟠 2 Janji Pembayaran Jatuh Tempo</div>
-              <p className="text-blue-800 mt-1">Fikri Maulana (12 Ags) & Rizki Pratama (15 Ags)</p>
+              <p className="text-blue-800 mt-1">Rudi (PU) & Sulis (KT)</p>
             </Link>
             <Link href="/iltizamat" className="p-3.5 rounded-xl bg-red-50 border border-red-200">
-              <div className="font-bold text-red-950">🔴 1 Syabab Belum Merespons Reminder</div>
-              <p className="text-red-800 mt-1">Sa&apos;ad Waqqash — Perlu ri&apos;ayah Guru Ust. Budi</p>
+              <div className="font-bold text-red-950">🔴 1 Daris Perlu Ri&apos;ayah</div>
+              <p className="text-red-800 mt-1">Boy (PU2) — Perlu ri&apos;ayah Guru Budi</p>
             </Link>
           </div>
         </div>
